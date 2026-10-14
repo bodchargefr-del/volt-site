@@ -40,14 +40,21 @@
   .faq-item summary::-webkit-details-marker { display: none; }
   @media (min-width: 768px) { #menu-toggle { display: none !important; } #mobile-menu { display: none !important; } .nav-desktop-cta { display: inline-flex !important; } }
   @media (max-width: 767px) { .nav-desktop-cta { display: none !important; } #menu-toggle { display: flex !important; } }
-  /* Onglets des tarifs : téléphone et tablette uniquement (14/10/2026) */
+  /* Onglets des tarifs : téléphone et tablette uniquement (14/10/2026), collés à la carte comme des intercalaires */
   .tarif-tabs{display:none}
   @media (max-width:1023px){
-    .tarif-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:16px;background:#ECE9E6;border-radius:999px}
-    .tarif-tabs button{border:0;background:transparent;border-radius:999px;padding:12px 8px;font:inherit;font-weight:800;font-size:.9375rem;line-height:1.15;color:#5d5f5f;cursor:pointer;transition:background .2s,color .2s}
-    .tarif-tabs button[aria-selected="true"]{background:#1C1D1D;color:#D0FF00}
+    .tarif-tabs{display:grid;grid-template-columns:1fr 1fr}
+    .tarif-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;margin:0;background:transparent;border-radius:24px 24px 0 0;padding:16px 10px 14px;font:inherit;font-weight:800;font-size:.875rem;line-height:1.15;text-align:left;color:#8a8c8c;cursor:pointer;transition:background .2s,color .2s}
+    .tarif-tabs button .material-symbols-outlined{font-size:20px;flex:none}
+    .tarif-tabs button[aria-selected="true"]{color:#1B1C1C}
+    #tab-clients[aria-selected="true"]{background:rgb(246,243,242)}
+    #tab-etab[aria-selected="true"]{background:#D0FF00}
+    .tarif-tabs+.grid{gap:0}
     .tarif-carte.is-off{display:none}
     .tarif-carte{opacity:1!important;transform:none!important;transition-delay:0s!important}
+    #carte-clients{border-top-left-radius:0}
+    #carte-etab{border-top-right-radius:0}
+    .tarif-carte .carte-titre{display:none}
   }
 </style>
 </head>
@@ -112,15 +119,15 @@
   <section class="max-w-7xl mx-auto px-6 pb-20 md:pb-32">
     <!-- 14/10/2026 : sur téléphone et tablette, deux onglets au lieu des deux cartes l'une sous l'autre (ordinateur inchangé) -->
     <div class="tarif-tabs" role="tablist" aria-label="Choisir les tarifs">
-      <button type="button" role="tab" id="tab-clients" aria-controls="carte-clients" aria-selected="true">Pour vos clients</button>
-      <button type="button" role="tab" id="tab-etab" aria-controls="carte-etab" aria-selected="false" tabindex="-1">Pour votre établissement</button>
+      <button type="button" role="tab" id="tab-clients" aria-controls="carte-clients" aria-selected="true"><span class="material-symbols-outlined" aria-hidden="true" style="font-variation-settings:'FILL' 1">smartphone</span><span>Pour vos clients</span></button>
+      <button type="button" role="tab" id="tab-etab" aria-controls="carte-etab" aria-selected="false" tabindex="-1"><span class="material-symbols-outlined" aria-hidden="true" style="font-variation-settings:'FILL' 1">store</span><span>Pour votre établissement</span></button>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- Carte utilisateur -->
       <div id="carte-clients" role="tabpanel" aria-labelledby="tab-clients" class="tarif-carte reveal card-lift bg-surface-container-low rounded-[2.5rem] p-8 md:p-12">
         <!-- 14/10/2026 : titre à côté de l'icône, plus gros (demande de Jules) -->
-        <div class="flex items-center mb-8" style="gap:16px">
+        <div class="carte-titre flex items-center mb-8" style="gap:16px">
           <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center shrink-0">
             <span class="material-symbols-outlined text-on-surface text-3xl" style="font-variation-settings: 'FILL' 1;">smartphone</span>
           </div>
@@ -174,7 +181,7 @@
       <!-- Carte établissement -->
       <div id="carte-etab" role="tabpanel" aria-labelledby="tab-etab" class="tarif-carte is-off reveal reveal-delay-1 card-lift bg-primary-container rounded-[2.5rem] p-8 md:p-12 flex flex-col">
         <!-- 14/10/2026 : titre à côté de l'icône, plus gros (demande de Jules) -->
-        <div class="flex items-center mb-8" style="gap:16px">
+        <div class="carte-titre flex items-center mb-8" style="gap:16px">
           <div class="w-14 h-14 bg-on-surface rounded-2xl flex items-center justify-center shrink-0">
             <span class="material-symbols-outlined text-primary-container text-3xl" style="font-variation-settings: 'FILL' 1;">store</span>
           </div>
