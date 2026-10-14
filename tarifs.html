@@ -105,10 +105,13 @@
 
       <!-- Carte utilisateur -->
       <div class="reveal card-lift bg-surface-container-low rounded-[2.5rem] p-8 md:p-12">
-        <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center mb-8">
-          <span class="material-symbols-outlined text-on-surface text-3xl" style="font-variation-settings: 'FILL' 1;">smartphone</span>
+        <!-- 14/10/2026 : titre à côté de l'icône, plus gros (demande de Jules) -->
+        <div class="flex items-center mb-8" style="gap:16px">
+          <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-on-surface text-3xl" style="font-variation-settings: 'FILL' 1;">smartphone</span>
+          </div>
+          <div class="font-black text-on-surface" style="font-size:clamp(1.25rem,2vw,1.625rem);line-height:1.1;letter-spacing:-.02em" data-i18n="tarifs.user.label">Pour vos clients</div>
         </div>
-        <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3" data-i18n="tarifs.user.label">Pour vos clients</div>
         <h2 class="text-3xl md:text-4xl font-black tracking-tighter text-on-surface mb-2">€1</h2>
         <p class="text-on-surface-variant font-medium mb-8" data-i18n="tarifs.user.sub">par tranche de 30 minutes</p>
         <div class="space-y-5 mb-10">
@@ -156,10 +159,13 @@
 
       <!-- Carte établissement -->
       <div class="reveal reveal-delay-1 card-lift bg-primary-container rounded-[2.5rem] p-8 md:p-12 flex flex-col">
-        <div class="w-14 h-14 bg-on-surface rounded-2xl flex items-center justify-center mb-8">
-          <span class="material-symbols-outlined text-primary-container text-3xl" style="font-variation-settings: 'FILL' 1;">store</span>
+        <!-- 14/10/2026 : titre à côté de l'icône, plus gros (demande de Jules) -->
+        <div class="flex items-center mb-8" style="gap:16px">
+          <div class="w-14 h-14 bg-on-surface rounded-2xl flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary-container text-3xl" style="font-variation-settings: 'FILL' 1;">store</span>
+          </div>
+          <div class="font-black text-on-surface" style="font-size:clamp(1.25rem,2vw,1.625rem);line-height:1.1;letter-spacing:-.02em" data-i18n="tarifs.venue.label">Pour votre établissement</div>
         </div>
-        <div class="text-xs font-bold uppercase tracking-widest text-on-surface/60 mb-3" data-i18n="tarifs.venue.label">Pour votre établissement</div>
         <h2 class="text-3xl md:text-4xl font-black tracking-tighter text-on-surface mb-2" data-i18n="tarifs.venue.price">Gratuit.</h2>
         <p class="text-on-surface/70 font-medium mb-8" data-i18n="tarifs.venue.sub">Zéro coût, zéro engagement</p>
         <div class="space-y-5 mb-10 flex-1">
