@@ -24,7 +24,8 @@ module.exports = async (req, res) => {
   if (d.site) return res.status(200).json({ ok: true }); // case cachée remplie = robot
   if (!propre(d.nom) || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(propre(d.email))) return res.status(400).json({ ok: false });
 
-  const fields = { 'Statut': 'Nouveau', 'Date soumission': new Date().toISOString() };
+  const fields = { 'Statut': '🆕 Nouveau', // même étiquette que dans le CRM (avec l'icône)
+    'Date soumission': new Date().toISOString() };
   for (const [cle, champ] of Object.entries(conf.champs)) if (propre(d[cle])) fields[champ] = propre(d[cle]);
 
   // Si un champ n'existe pas dans la table Airtable, on le retire et on réessaie (jusqu'à 4 fois) :
