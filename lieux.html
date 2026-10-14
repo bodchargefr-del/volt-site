@@ -7,24 +7,27 @@
 <meta name="description" content="Le réseau BOD est en cours de déploiement. Trouvez bientôt une station de location de batteries portables dans les bars, restaurants et hôtels près de chez vous."/>
 <link rel="canonical" href="https://bodcharge.com/lieux"/>
 <meta name="robots" content="index, follow"/>
-<meta name="author" content="Alexis Astier"/>
-<link rel="icon" type="image/png" href="/images/favicon.png?v=2"/>
-<link rel="shortcut icon" href="/images/favicon.png?v=2"/>
+<meta name="author" content="Jules Antoine"/>
+<link rel="icon" type="image/png" href="images/favicon.png?v=2"/>
+<link rel="shortcut icon" href="images/favicon.png?v=2"/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://bodcharge.com/lieux"/>
 <meta property="og:title" content="Lieux BOD — Trouvez une station près de vous"/>
 <meta property="og:description" content="Le réseau BOD est en cours de déploiement. Bientôt dans les bars, restaurants et hôtels de votre ville."/>
 <meta property="og:site_name" content="Bod"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<link rel="stylesheet" href="styles.css"/>
+<link rel="preload" href="fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="stylesheet" href="styles.css?v=12"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="lang.js" defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="lang.js?v=4" defer></script>
+<script src="anim.js?v=5" defer></script>
 <style>
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  html { scroll-behavior: smooth; }
   body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fbf9f8; }
   .glass-nav { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
@@ -37,13 +40,44 @@
   .reveal-delay-2 { transition-delay: 0.2s; }
   .card-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
   .card-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
-  .map-wrap { position: relative; overflow: hidden; border-radius: 2.5rem; }
-  #bod-map { width: 100%; height: 100%; min-height: 460px; border-radius: 2.5rem; }
-  .leaflet-control-attribution { font-size: 10px !important; }
-  .leaflet-control-zoom { border: none !important; box-shadow: 0 2px 12px rgba(0,0,0,0.12) !important; }
-  .leaflet-control-zoom a { border-radius: 12px !important; font-size: 18px !important; width: 36px !important; height: 36px !important; line-height: 36px !important; color: #1b1c1c !important; background: #fbf9f8 !important; border: none !important; margin-bottom: 4px !important; display: block !important; }
+  .map-wrap { position: relative; overflow: hidden; border-radius: 2.5rem; height: clamp(520px, 68vh, 700px); background: #eeecea; isolation: isolate; box-shadow: 0 30px 70px -34px rgba(27, 28, 28, .35); }
+  #bod-map { position: absolute; inset: 0; background: #eeecea; }
+  #bod-map .maplibregl-ctrl-attrib { font-size: 10px; background: rgba(255, 255, 255, .7); }
+  .map-tools, .map-sheet { position: absolute; z-index: 5; }
+  .map-tools { right: 22px; bottom: 48px; display: flex; flex-direction: column; gap: 14px; }
+  .map-tools button { width: 58px; height: 58px; border-radius: 50%; border: 0; background: #fff; color: #1b1c1c; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 20px rgba(27, 28, 28, .18); transition: background .15s ease, transform .15s ease; }
+  .map-tools button:hover { background: #D0FF00; } .map-tools button:active { transform: scale(.93); }
+  .map-tools button.busy { opacity: .5; }
+  .map-tools .material-symbols-outlined { font-size: 26px; font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+  .map-sheet { left: 22px; bottom: 22px; width: min(440px, calc(100% - 44px)); padding: 14px; border-radius: 26px; background: #fff; box-shadow: 0 14px 44px rgba(27, 28, 28, .2); display: flex; flex-direction: column; gap: 12px; }
+  .map-sheet-row { display: grid; grid-template-columns: 1fr 1.35fr; gap: 12px; }
+  .map-pill { display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px; padding: 0 12px; border-radius: 16px; background: #eceae7; color: #1b1c1c; font-weight: 800; font-size: .9375rem; letter-spacing: -.01em; white-space: nowrap; transition: background .15s ease; }
+  .map-pill:hover { background: #e2dfdb; }
+  .map-pill .material-symbols-outlined { font-size: 22px; color: #526600; font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+  .map-cta { display: flex; align-items: center; justify-content: center; gap: 10px; height: 60px; border-radius: 999px; background: #1b1c1c; color: #fff; font-weight: 800; font-size: 1.0625rem; letter-spacing: -.01em; transition: transform .15s ease; }
+  .map-cta:hover { transform: scale(1.02); }
+  .map-cta .material-symbols-outlined { font-size: 24px; color: #D0FF00; font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+  .map-toast { position: absolute; z-index: 6; top: 20px; left: 50%; padding: 10px 16px; border-radius: 999px; background: #1b1c1c; color: #fff; font-size: .8125rem; font-weight: 600; opacity: 0; transform: translate(-50%, -8px); transition: .25s; pointer-events: none; white-space: nowrap; }
+  .map-toast.on { opacity: 1; transform: translate(-50%, 0); }
+  /* repère BOD (servira dès la première station installée) : goutte citron vert, « bod » en noir */
+  .bod-pin { width: 58px; height: 74px; cursor: pointer; filter: drop-shadow(0 6px 10px rgba(27, 28, 28, .28)); }
+  @media (max-width: 767px) {
+    .map-wrap { border-radius: 1.75rem; height: 640px; }
+    .map-sheet { left: 12px; right: 12px; bottom: 12px; width: auto; border-radius: 24px; }
+    .map-tools { right: 16px; bottom: 44px; gap: 12px; } .map-tools button { width: 54px; height: 54px; }
+    .map-pill { font-size: .875rem; gap: 6px; }
+  }
   @media (min-width: 768px) { #menu-toggle { display: none !important; } #mobile-menu { display: none !important; } .nav-desktop-cta { display: inline-flex !important; } }
   @media (max-width: 767px) { .nav-desktop-cta { display: none !important; } #menu-toggle { display: flex !important; } }
+  /* « Partout où vous sortez » : 8 cases, icône en haut, nom en bas, la case passe au lime au survol */
+  .spots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; }
+  .spot { display: flex; flex-direction: column; justify-content: space-between; gap: 28px; min-height: 168px; padding: 28px; border-radius: 24px; background: #f6f3f2; transition: background .25s ease, transform .3s cubic-bezier(.16, 1, .3, 1), box-shadow .3s ease; }
+  .spot .material-symbols-outlined { font-size: 40px; color: #526600; font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 40; transition: color .25s ease; }
+  .spot-name { font-size: 1.125rem; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; color: #1b1c1c; }
+  .spot:hover { background: #D0FF00; transform: translateY(-4px); box-shadow: 0 18px 34px -18px rgba(27, 28, 28, .35); }
+  .spot:hover .material-symbols-outlined { color: #1b1c1c; }
+  @media (max-width: 900px) { .spots { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .spot { min-height: 132px; padding: 20px; gap: 20px; border-radius: 20px; } .spot .material-symbols-outlined { font-size: 32px; } .spot-name { font-size: 1rem; } }
+  @media (prefers-reduced-motion: reduce) { .spot { transition: none; } .spot:hover { transform: none; } }
 </style>
 </head>
 <body class="bg-surface text-on-surface selection:bg-primary-container">
@@ -97,76 +131,22 @@
   <!-- HERO -->
   <section class="max-w-7xl mx-auto px-6 pt-16 md:pt-24 pb-16">
     <div class="animate-fade-up text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4" data-i18n="lieux.label">Lieux</div>
-    <h1 class="animate-fade-up-delay-1 text-4xl md:text-6xl font-black tracking-tighter text-on-surface leading-[0.95] mb-6 max-w-3xl" data-i18n="lieux.h1">
-      BOD arrive<br/>bientôt<br/><span class="text-primary-container bg-on-surface px-2 whitespace-nowrap">près de vous.</span>
-    </h1>
+    <h1 class="bod-title animate-fade-up-delay-1 mb-6" data-i18n="lieux.h1">BOD arrive bientôt <span class="bod-hl">près de vous.</span></h1>
     <p class="animate-fade-up-delay-2 text-xl text-on-surface-variant leading-relaxed max-w-xl" data-i18n="lieux.intro">
       Notre réseau est en cours de déploiement. Les premières stations seront en ligne dans les prochaines semaines.
     </p>
   </section>
 
-  <!-- MAP EXAMPLE -->
+  <!-- CARTE recopiée de l'appli Dott, aux couleurs BOD : fond gris très clair, eau en citron vert pâle, boutons ronds blancs, fiche blanche en bas avec deux pastilles grises et un bouton noir. Aucun repère : aucune station n'est installée. -->
   <section class="max-w-7xl mx-auto px-6 pb-20">
-    <div class="reveal grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+    <div class="reveal map-wrap">
+      <div id="bod-map"></div>
 
-      <!-- MAP (Leaflet) -->
-      <div class="lg:col-span-2 map-wrap" style="min-height:460px;">
-        <div id="bod-map"></div>
+      <div class="map-tools">
+        <button type="button" id="map-loc" aria-label="Me localiser" title="Me localiser"><span class="material-symbols-outlined" aria-hidden="true">my_location</span></button>
+        <button type="button" id="map-in" aria-label="Zoomer" title="Zoomer"><span class="material-symbols-outlined" aria-hidden="true">add</span></button>
+        <button type="button" id="map-out" aria-label="Dézoomer" title="Dézoomer"><span class="material-symbols-outlined" aria-hidden="true">remove</span></button>
       </div>
-
-      <!-- FICHE ÉTABLISSEMENT -->
-      <div class="flex flex-col gap-4">
-        <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm flex-1">
-          <div class="flex items-start gap-4 mb-5">
-            <div class="w-12 h-12 bg-primary-container rounded-2xl flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-on-surface text-xl" style="font-variation-settings: 'FILL' 1;">restaurant</span>
-            </div>
-            <div>
-              <div class="font-black text-on-surface text-lg leading-tight">Le Patio des Arènes</div>
-              <div class="text-sm text-on-surface-variant font-medium">Bar • Nîmes</div>
-            </div>
-          </div>
-          <div class="space-y-3 text-sm mb-6">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">location_on</span>
-              <span class="text-on-surface-variant">14 Bd des Arènes, 30000 Nîmes</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">schedule</span>
-              <span class="text-on-surface-variant">Lun–Sam : 10h – 2h • Dim : 14h – 23h</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">battery_charging_full</span>
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-on-surface">4 batteries disponibles</span>
-                <span class="text-xs bg-primary-container/20 text-primary px-2 py-0.5 rounded-full font-semibold">sur 6</span>
-              </div>
-            </div>
-          </div>
-          <!-- Batteries visuelles -->
-          <div class="flex gap-2 mb-5">
-            <div class="flex-1 h-2.5 bg-primary-container rounded-full"></div>
-            <div class="flex-1 h-2.5 bg-primary-container rounded-full"></div>
-            <div class="flex-1 h-2.5 bg-primary-container rounded-full"></div>
-            <div class="flex-1 h-2.5 bg-primary-container rounded-full"></div>
-            <div class="flex-1 h-2.5 bg-surface-container-low rounded-full"></div>
-            <div class="flex-1 h-2.5 bg-surface-container-low rounded-full"></div>
-          </div>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;"></span>
-              <span class="text-sm font-semibold text-on-surface">Station active</span>
-            </div>
-            <span class="text-xs text-on-surface-variant">€1 / 30 min</span>
-          </div>
-        </div>
-
-        <div class="bg-surface-container-low rounded-3xl p-5 text-center">
-          <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Réseau en lancement</div>
-          <div class="text-sm text-on-surface-variant">Bientôt dans d'autres établissements</div>
-        </div>
-      </div>
-
     </div>
   </section>
 
@@ -210,40 +190,40 @@
       <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3" data-i18n="lieux.sectors.label">Où trouver BOD</div>
       <h2 class="text-3xl md:text-5xl font-black tracking-tighter text-on-surface" data-i18n="lieux.sectors.h2">Partout où vous sortez</h2>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 reveal">
-      <div class="card-lift bg-surface-container-low rounded-2xl p-6 text-center group hover:bg-primary-container transition-colors">
-        <span class="material-symbols-outlined text-primary text-3xl mb-3 block group-hover:text-on-surface transition-colors" style="font-variation-settings: 'FILL' 1;">restaurant</span>
-        <div class="font-semibold text-on-surface text-sm">Bars & Restaurants</div>
-      </div>
-      <div class="card-lift bg-surface-container-low rounded-2xl p-6 text-center group hover:bg-primary-container transition-colors">
-        <span class="material-symbols-outlined text-primary text-3xl mb-3 block group-hover:text-on-surface transition-colors" style="font-variation-settings: 'FILL' 1;">hotel</span>
-        <div class="font-semibold text-on-surface text-sm">Hôtels</div>
-      </div>
-      <div class="card-lift bg-surface-container-low rounded-2xl p-6 text-center group hover:bg-primary-container transition-colors">
-        <span class="material-symbols-outlined text-primary text-3xl mb-3 block group-hover:text-on-surface transition-colors" style="font-variation-settings: 'FILL' 1;">storefront</span>
-        <div class="font-semibold text-on-surface text-sm">Centres commerciaux</div>
-      </div>
-      <div class="card-lift bg-surface-container-low rounded-2xl p-6 text-center group hover:bg-primary-container transition-colors">
-        <span class="material-symbols-outlined text-primary text-3xl mb-3 block group-hover:text-on-surface transition-colors" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
-        <div class="font-semibold text-on-surface text-sm">Salles de sport</div>
-      </div>
-      <div class="card-lift bg-surface-container-low rounded-2xl p-6 text-center group hover:bg-primary-container transition-colors">
-        <span class="material-symbols-outlined text-primary text-3xl mb-3 block group-hover:text-on-surface transition-colors" style="font-variation-settings: 'FILL' 1;">local_airport</span>
-        <div class="font-semibold text-on-surface text-sm">Aéroports & Gares</div>
-      </div>
-      <div class="card-lift bg-surface-container-low rounded-2xl p-6 text-center group hover:bg-primary-container transition-colors">
-        <span class="material-symbols-outlined text-primary text-3xl mb-3 block group-hover:text-on-surface transition-colors" style="font-variation-settings: 'FILL' 1;">museum</span>
-        <div class="font-semibold text-on-surface text-sm">Musées</div>
-      </div>
-      <div class="card-lift bg-surface-container-low rounded-2xl p-6 text-center group hover:bg-primary-container transition-colors">
-        <span class="material-symbols-outlined text-primary text-3xl mb-3 block group-hover:text-on-surface transition-colors" style="font-variation-settings: 'FILL' 1;">event</span>
-        <div class="font-semibold text-on-surface text-sm">Événementiel</div>
-      </div>
-      <div class="card-lift bg-surface-container-low rounded-2xl p-6 text-center group hover:bg-primary-container transition-colors">
-        <span class="material-symbols-outlined text-primary text-3xl mb-3 block group-hover:text-on-surface transition-colors" style="font-variation-settings: 'FILL' 1;">theaters</span>
-        <div class="font-semibold text-on-surface text-sm">Cinémas</div>
-      </div>
-    </div>
+    <ul class="spots reveal">
+      <li class="spot">
+        <span class="material-symbols-outlined" aria-hidden="true">restaurant</span>
+        <span class="spot-name">Bars & Restaurants</span>
+      </li>
+      <li class="spot">
+        <span class="material-symbols-outlined" aria-hidden="true">hotel</span>
+        <span class="spot-name">Hôtels</span>
+      </li>
+      <li class="spot">
+        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+        <span class="spot-name">Centres commerciaux</span>
+      </li>
+      <li class="spot">
+        <span class="material-symbols-outlined" aria-hidden="true">fitness_center</span>
+        <span class="spot-name">Salles de sport</span>
+      </li>
+      <li class="spot">
+        <span class="material-symbols-outlined" aria-hidden="true">local_airport</span>
+        <span class="spot-name">Aéroports & Gares</span>
+      </li>
+      <li class="spot">
+        <span class="material-symbols-outlined" aria-hidden="true">museum</span>
+        <span class="spot-name">Musées</span>
+      </li>
+      <li class="spot">
+        <span class="material-symbols-outlined" aria-hidden="true">event</span>
+        <span class="spot-name">Événementiel</span>
+      </li>
+      <li class="spot">
+        <span class="material-symbols-outlined" aria-hidden="true">theaters</span>
+        <span class="spot-name">Cinémas</span>
+      </li>
+    </ul>
   </section>
 
   <!-- CTA DOUBLE -->
@@ -251,14 +231,14 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 reveal">
 
       <!-- CTA Utilisateur -->
-      <div class="bg-on-surface rounded-[2.5rem] p-10 md:p-14 flex flex-col justify-between gap-10">
+      <div id="alerte" style="scroll-margin-top:110px" class="bg-on-surface rounded-[2.5rem] p-10 md:p-14 flex flex-col justify-between gap-10">
         <div>
           <div class="text-white/40 text-xs font-bold uppercase tracking-widest mb-5" data-i18n="lieux.cta1.label">Utilisateurs</div>
           <h3 class="text-4xl md:text-5xl font-black text-primary-container tracking-tighter leading-[0.95]" data-i18n="lieux.cta1.h3">
             Soyez alerté<br/>à l'ouverture.
           </h3>
         </div>
-        <form action="mailto:hello@bodcharge.com" method="get" enctype="text/plain" class="flex flex-col gap-3">
+        <form action="mailto:bod.chargefr@gmail.com" method="get" enctype="text/plain" class="flex flex-col gap-3">
           <input name="email" type="email" placeholder="votre@email.fr" required
             style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.12);border-radius:100px;padding:16px 22px;color:#fff;font-size:15px;outline:none;width:100%;"
             onfocus="this.style.borderColor='rgba(208,255,0,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"/>
@@ -299,15 +279,18 @@
 
       <div>
         <a href="index.html" style="display:inline-block;margin-bottom:16px;">
-          <img src="/images/logo-bod.png" alt="Bod" style="height:38px;width:auto;"/>
+          <img src="images/logo-bod.png" alt="Bod" style="height:38px;width:auto;"/>
         </a>
         <p style="font-size:.875rem;color:rgba(27,28,28,0.45);max-width:220px;line-height:1.65;margin:0;" data-i18n="footer.tagline">La batterie de vos clients, c'est notre affaire.</p>
         <div style="display:flex;gap:12px;margin-top:16px;">
-          <a href="https://www.instagram.com/bod.charge/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='rgba(27,28,28,0.14)'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
+          <a href="https://www.instagram.com/bod.charge/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='#D0FF00'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="5.5" stroke="#1b1c1c" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" stroke="#1b1c1c" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="#1b1c1c"/></svg>
           </a>
-          <a href="https://www.linkedin.com/company/bodcharge/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='rgba(27,28,28,0.14)'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
+          <a href="https://www.linkedin.com/company/bodcharge/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='#D0FF00'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#1b1c1c" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="22" height="22" rx="4" fill="#1b1c1c"/><path d="M7 9.5H5v9h2v-9ZM6 8.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5ZM19 13.2c0-2.5-1.1-4-3.2-4-1.1 0-2 .6-2.3 1.5V9.5h-2v9h2v-5c0-1.3.6-2.2 1.8-2.2 1.1 0 1.7.8 1.7 2.2v5H19v-5.3Z" fill="white"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@bod.charge" aria-label="TikTok" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='#D0FF00'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1b1c1c" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
           </a>
         </div>
       </div>
@@ -315,21 +298,21 @@
       <div>
         <div style="font-size:.625rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgba(27,28,28,0.3);margin-bottom:18px;">Navigation</div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <a href="produits.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Produits</a>
-          <a href="tarifs.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Tarifs</a>
-          <a href="lieux.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Lieux</a>
-          <a href="publicite.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Publicité</a>
-          <a href="blog.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Blog</a>
+          <a href="produits.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Produits</a>
+          <a href="tarifs.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Tarifs</a>
+          <a href="lieux.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Lieux</a>
+          <a href="publicite.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Publicité</a>
+          <a href="blog.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Blog</a>
         </div>
       </div>
 
       <div>
         <div style="font-size:.625rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgba(27,28,28,0.3);margin-bottom:18px;">Contact</div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <a href="contact.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Nous contacter</a>
-          <a href="mailto:hello@bodcharge.com" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">hello@bodcharge.com</a>
-          <a href="a-propos.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">À propos</a>
-          <a href="mentions-legales.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Mentions légales</a>
+          <a href="contact.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Nous contacter</a>
+          <a href="mailto:bod.chargefr@gmail.com" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">bod.chargefr@gmail.com</a>
+          <a href="a-propos.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">À propos</a>
+          <a href="mentions-legales.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Mentions légales</a>
         </div>
       </div>
 
@@ -342,45 +325,61 @@
 </footer>
 
 <script>
-  // --- Leaflet map ---
-  const map = L.map('bod-map', {
-    center: [43.8367, 4.3604],
-    zoom: 16,
-    scrollWheelZoom: true,
-    zoomControl: true
-  });
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 20
-  }).addTo(map);
-
-  const bodIcon = L.divIcon({
-    html: `<svg viewBox="0 0 36 50" width="26" height="36" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 3px 8px rgba(0,0,0,0.25));">
-      <path d="M18 1C8.6 1 1 8.6 1 18C1 30.5 18 49 18 49C18 49 35 30.5 35 18C35 8.6 27.4 1 18 1Z" fill="#D0FF00"/>
-      <path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/>
-    </svg>`,
-    className: '',
-    iconSize: [26, 36],
-    iconAnchor: [13, 35],
-    popupAnchor: [0, -36]
-  });
-
-  L.marker([43.8367, 4.3604], { icon: bodIcon })
-    .addTo(map)
-    .bindPopup('<b style="font-family:Inter,sans-serif">Le Patio des Arènes</b><br/><span style="font-family:Inter,sans-serif;font-size:12px;color:#666">Station BOD · 4 batteries dispo</span>');
-
-  // Label flottant
-  const label = L.control({ position: 'topleft' });
-  label.onAdd = () => {
-    const d = L.DomUtil.create('div');
-    d.setAttribute('data-i18n', 'lieux.map.label');
-    d.innerHTML = 'Exemple — à quoi ressemblera la carte';
-    d.style.cssText = 'background:rgba(27,28,28,0.82);color:#D0FF00;font-size:11px;font-weight:700;font-family:Inter,sans-serif;padding:5px 14px;border-radius:100px;backdrop-filter:blur(10px);margin:12px;pointer-events:none;';
-    return d;
-  };
-  label.addTo(map);
+  // --- Carte (MapLibre + fond OpenFreeMap, gratuit et sans clé), recolorée aux couleurs BOD ---
+  // Les stations installées. Vide aujourd'hui : aucune borne n'est encore posée. Pour en ajouter une : { nom: 'Nom du lieu', ville: 'Nîmes', lng: 4.36, lat: 43.83 }
+  const STATIONS = [];
+  if (window.maplibregl) {
+    const EAU = '#dcee9c', TERRE = '#efedea';
+    const map = new maplibregl.Map({
+      container: 'bod-map', style: 'https://tiles.openfreemap.org/styles/positron',
+      center: [2.6, 46.6], zoom: window.innerWidth < 700 ? 4.3 : 5.1, minZoom: 1.5, maxZoom: 16,
+      attributionControl: { compact: true }, cooperativeGestures: true, dragRotate: false, pitchWithRotate: false,
+      locale: { 'CooperativeGesturesHandler.WindowsHelpText': 'Maintenez Ctrl et tournez la molette pour zoomer', 'CooperativeGesturesHandler.MacHelpText': 'Maintenez ⌘ et faites défiler pour zoomer', 'CooperativeGesturesHandler.MobileHelpText': 'Utilisez deux doigts pour déplacer la carte' }
+    });
+    map.touchZoomRotate.disableRotation();
+    map.on('style.load', () => {
+      const nomFr = ['coalesce', ['get', 'name:fr'], ['get', 'name_fr'], ['get', 'name:latin'], ['get', 'name']];
+      map.getStyle().layers.forEach(l => {
+        try {
+          if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', TERRE);
+          else if (l.id === 'water') map.setPaintProperty(l.id, 'fill-color', EAU);
+          else if (l.id === 'waterway') map.setPaintProperty(l.id, 'line-color', EAU);
+          else if (l.id === 'park' || l.id === 'landcover_wood') map.setPaintProperty(l.id, 'fill-color', '#e6e9df');
+          else if (l.id === 'landuse_residential' || l.id === 'building') map.setPaintProperty(l.id, 'fill-color', '#ebe9e5');
+          else if (l.type === 'raster') map.setLayoutProperty(l.id, 'visibility', 'none');
+          else if (/shield|airport|label_other/.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none');
+          else if (l.type === 'symbol') {
+            map.setLayoutProperty(l.id, 'text-field', nomFr);
+            const eau = /water/.test(l.id);
+            map.setPaintProperty(l.id, 'text-color', eau ? '#6f8500' : /country|city/.test(l.id) ? '#3d3b38' : '#5e5b57');
+            map.setPaintProperty(l.id, 'text-halo-color', eau ? 'rgba(220,238,156,.6)' : '#ffffff');
+            map.setPaintProperty(l.id, 'text-halo-width', 1.4);
+          }
+        } catch (err) { /* une couche qui n'accepte pas le réglage est laissée telle quelle */ }
+      });
+    });
+    // Repères BOD : un par station installée (aucun pour l'instant)
+    STATIONS.forEach(st => {
+      const el = document.createElement('div'); el.className = 'bod-pin';
+      el.innerHTML = '<svg viewBox="0 0 58 74" width="58" height="74" xmlns="http://www.w3.org/2000/svg"><path d="M29 1C13.5 1 1 13.5 1 29c0 20 28 44 28 44s28-24 28-44C57 13.5 44.500 1 29 1Z" fill="#D0FF00"/><text x="29" y="35" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" font-size="17" letter-spacing="-.5" fill="#1b1c1c">bod</text></svg>';
+      new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([st.lng, st.lat]).setPopup(new maplibregl.Popup({ offset: 60, closeButton: false }).setHTML('<b>' + st.nom + '</b><br>' + st.ville)).addTo(map);
+    });
+    const wrap = document.querySelector('.map-wrap'), tip = document.createElement('div'); tip.className = 'map-toast'; wrap.appendChild(tip);
+    let tt; const say = m => { tip.textContent = m; tip.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => tip.classList.remove('on'), 3200); };
+    document.getElementById('map-in').addEventListener('click', () => map.zoomIn());
+    document.getElementById('map-out').addEventListener('click', () => map.zoomOut());
+    // « Me localiser » : centre la carte sur le visiteur (rien n'est envoyé ni enregistré)
+    const loc = document.getElementById('map-loc');
+    loc.addEventListener('click', () => {
+      if (!navigator.geolocation) return say('Localisation indisponible sur cet appareil.');
+      loc.classList.add('busy');
+      navigator.geolocation.getCurrentPosition(
+        pos => { loc.classList.remove('busy'); map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 11.5, duration: 1400 }); },
+        () => { loc.classList.remove('busy'); say('Localisation refusée ou indisponible.'); },
+        { timeout: 8000 });
+    });
+    window.bodMap = map;
+  }
 
   const toggle = document.getElementById('menu-toggle');
   const menu = document.getElementById('mobile-menu');

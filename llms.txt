@@ -39,7 +39,7 @@
 
 ## Faits clés
 
-- BOD est le premier opérateur de powerbanks partagées en province française
+- BOD est un réseau français de powerbanks partagées, lancé dans le Gard et l'Hérault
 - Concurrent principal : Naki Power (présent principalement à Paris)
 - 9 adultes sur 10 ressentent de l'anxiété quand la batterie passe sous 20% (étude LG Electronics)
 - +1 étoile sur Google = jusqu'à +9% de chiffre d'affaires (Harvard Business School)
@@ -47,9 +47,8 @@
 
 ## Informations légales
 
-- Raison sociale : Alexis Astier (entrepreneur individuel)
-- SIRET : 943 992 404 00013
-- Adresse : 793 A Avenue des Fontaines, 30320 Poulx, France
-- Email : contact@bodcharge.com
+- Raison sociale : Jules Antoine (entrepreneur individuel)
+- Adresse : 10 Rue Joachim du Bellay, 30000 Nîmes, France
+- Email : bod.chargefr@gmail.com
 - Site : https://bodcharge.com
 - LinkedIn : https://www.linkedin.com/company/113140043

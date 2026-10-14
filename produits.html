@@ -7,20 +7,22 @@
 <meta name="description" content="Trois stations de recharge portable adaptées à chaque établissement. Basic 6 slots, Medium 12 slots, Maxi 24 slots. Installation gratuite, maintenue par BOD."/>
 <link rel="canonical" href="https://bodcharge.com/produits"/>
 <meta name="robots" content="index, follow"/>
-<meta name="author" content="Alexis Astier"/>
-<link rel="icon" type="image/png" href="/images/favicon.png?v=2"/>
-<link rel="shortcut icon" href="/images/favicon.png?v=2"/>
+<meta name="author" content="Jules Antoine"/>
+<link rel="icon" type="image/png" href="images/favicon.png?v=2"/>
+<link rel="shortcut icon" href="images/favicon.png?v=2"/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://bodcharge.com/produits"/>
 <meta property="og:title" content="Stations BOD — Basic, Medium et Maxi"/>
 <meta property="og:description" content="Trois stations de recharge portable pour tous les établissements. Installation gratuite, maintenue par BOD."/>
 <meta property="og:site_name" content="Bod"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<link rel="stylesheet" href="styles.css"/>
+<link rel="preload" href="fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="stylesheet" href="styles.css?v=12"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script src="lang.js" defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
+<script src="lang.js?v=3" defer></script>
+<script src="anim.js?v=5" defer></script>
 <style>
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
   body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fbf9f8; }
@@ -48,9 +50,55 @@
   .station-text-right { text-align: right; }
   .station-text-right .slot-bubble { justify-content: flex-end; }
   .station-text-right .feature-row { flex-direction: row-reverse; }
-  @keyframes insta-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-  .insta-marquee { animation: insta-scroll 28s linear infinite; }
-  .insta-marquee:hover { animation-play-state: paused; }
+  /* Bandeau de photos : défile en continu, s'arrête au survol */
+  .photo-band { overflow: hidden; touch-action: pan-y; cursor: grab; width: 100%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+  .photo-band::-webkit-scrollbar { display: none; }
+  .photo-band.is-drag { cursor: grabbing; }
+  .photo-track { display: flex; gap: 16px; width: max-content; will-change: transform; }
+  .photo-track img { user-select: none; -webkit-user-drag: none; }
+  .photo-track img { height: 300px; width: auto; flex-shrink: 0; border-radius: 1.5rem; object-fit: cover; }
+  @media (max-width: 767px) { .photo-track img { height: 220px; } .photo-track { gap: 12px; } }
+  @media (prefers-reduced-motion: reduce) { .photo-band { -webkit-mask-image: none; mask-image: none; } }
+  /* Téléphone : cartes de stations compactes (photo en haut, à la bonne taille, texte aligné à gauche) et prix sur une ligne */
+  @media (max-width: 767px) {
+    .station-card { border-radius: 28px !important; }
+    .stations-sec { padding-bottom: 36px !important; }
+    .station-img-zone { order: -1; height: 210px; padding: 18px 16px !important; gap: 14px !important; }
+    .station-img-zone img { max-height: 172px !important; max-width: 58%; width: auto !important; height: auto !important; }
+    .station-img-zone img[src*="batterie"] { max-height: 104px !important; max-width: 30%; }
+    .station-text { padding: 22px 24px 26px !important; }
+    .station-text .slot-bubble { margin-bottom: 16px !important; }
+    .station-text .slot-bubble > div { padding: 7px 14px !important; }
+    .station-text .slot-bubble .text-3xl { font-size: 1.375rem !important; }
+    .station-text h2 { font-size: 1.625rem !important; margin-bottom: 2px !important; }
+    .station-text h2 + p { margin-bottom: 16px !important; }
+    .station-text .space-y-4 { margin-bottom: 20px !important; }
+    .station-text .space-y-4 > * + * { margin-top: 9px !important; }
+    .station-text-right { text-align: left; }
+    .station-text-right .slot-bubble { justify-content: flex-start; }
+    .station-text-right .feature-row { flex-direction: row; }
+    .wrap-sel { display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 8px !important; }
+    .wrap-sel > button { min-width: 0 !important; padding: 14px 8px !important; align-items: center; }
+    .wrap-sel > button span:last-child { font-size: 22px !important; }
+    .wrap-sel > div { grid-column: 1 / -1; padding: 12px 16px !important; justify-content: center; }
+  }
+  /* Téléphone : les 3 stations défilent de gauche à droite au doigt (une carte à la fois, la suivante dépasse un peu), avec 3 points dessous. Ordinateur inchangé. */
+  .st-dots { display: none; }
+  @media (max-width: 767px) {
+    .stations-sec { display: flex !important; align-items: stretch; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 24px; padding: 4px 24px 6px !important; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+    .stations-sec::-webkit-scrollbar { display: none; }
+    .stations-sec > * { margin-top: 0 !important; }
+    .stations-sec .station-card { flex: 0 0 85%; scroll-snap-align: start; scroll-snap-stop: always; opacity: 1 !important; transform: none !important; }
+    .stations-sec .station-text { flex: 1; justify-content: flex-start !important; }
+    .stations-sec .station-text > a:last-child, .stations-sec .station-text > :last-child { margin-top: auto; }
+    .st-dots { display: flex; justify-content: center; gap: 8px; padding: 14px 0 34px; }
+    .st-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: rgba(27, 28, 28, .18); transition: width .25s ease, background .25s ease; }
+    .st-dots button.on { width: 26px; background: #1b1c1c; }
+  }
+  /* Curseur Avant / Après : sur téléphone, cadre en hauteur pour que la borne soit grande */
+  @media (max-width: 767px) {
+    .ba-wrap { aspect-ratio: 4 / 5 !important; border-radius: 1.5rem !important; }
+  }
 </style>
 </head>
 <body class="bg-surface text-on-surface selection:bg-primary-container">
@@ -104,16 +152,14 @@
   <!-- HERO -->
   <section class="max-w-7xl mx-auto px-6 pt-16 md:pt-24 pb-16">
     <div class="animate-fade-up text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4" data-i18n="produits.label">Nos stations</div>
-    <h1 class="animate-fade-up-delay-1 text-4xl md:text-6xl font-black tracking-tighter text-on-surface leading-[0.95] mb-6 max-w-3xl" data-i18n="produits.h1">
-      Un modèle pour<br/>chaque établissement.
-    </h1>
+    <h1 class="bod-title animate-fade-up-delay-1 mb-6" data-i18n="produits.h1">Un modèle pour chaque <span class="bod-hl">établissement.</span></h1>
     <p class="animate-fade-up-delay-2 text-xl text-on-surface-variant leading-relaxed max-w-xl" data-i18n="produits.intro">
       Basic, Medium ou Maxi — chaque station est gratuite à l'installation et maintenue par BOD.
     </p>
   </section>
 
   <!-- 3 STATIONS -->
-  <section class="max-w-7xl mx-auto px-6 pb-20 md:pb-32 space-y-6">
+  <section class="stations-sec max-w-7xl mx-auto px-6 pb-20 md:pb-32 space-y-6">
 
     <!-- BASIC -->
     <div class="reveal card-lift station-card bg-surface-container-low rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row">
@@ -155,7 +201,7 @@
     <!-- MEDIUM -->
     <div class="reveal reveal-delay-1 card-lift station-card bg-primary-container rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row">
       <div class="station-img-zone flex items-center justify-center p-6 gap-4" style="background-color:#b5de00;">
-        <img src="images/medium-station.png" alt="Station BOD Medium — borne de location de batteries portables 10 slots pour hôtels et restaurants" style="object-fit:contain;max-height:440px;width:auto;">
+        <img src="images/medium-12-station-bod-detouree.webp" alt="Station BOD Medium — borne de comptoir 12 emplacements, écran BOD" width="1041" height="1600" style="object-fit:contain;max-height:400px;width:auto;filter:drop-shadow(0 24px 30px rgba(27,28,28,.22));">
         <img src="images/batterie-externe-bod.png" alt="Batterie portable BOD disponible à la location" style="object-fit:contain;max-height:200px;width:auto;">
       </div>
       <div class="station-text station-text-right flex flex-col justify-center p-10 md:p-14">
@@ -170,7 +216,7 @@
         <div class="space-y-4 mb-10">
           <div class="feature-row flex items-center gap-3">
             <span class="material-symbols-outlined text-on-surface shrink-0" style="font-size:18px;line-height:1;font-variation-settings:'FILL' 1;">check_circle</span>
-            <span class="text-sm text-on-surface/70" data-i18n="produits.medium.f1">Sur pied ou mural — s'intègre partout</span>
+            <span class="text-sm text-on-surface/70" data-i18n="produits.medium.f1">Format comptoir — grand écran</span>
           </div>
           <div class="feature-row flex items-center gap-3">
             <span class="material-symbols-outlined text-on-surface shrink-0" style="font-size:18px;line-height:1;font-variation-settings:'FILL' 1;">check_circle</span>
@@ -221,29 +267,30 @@
         <a href="partenaire.html" class="w-full inline-flex items-center justify-center bg-primary-container text-on-surface px-7 py-3.5 rounded-full font-black text-sm hover:scale-105 transition-transform active:scale-95" data-i18n="produits.cta">Demander cette station</a>
       </div>
       <div class="station-img-zone flex items-center justify-center p-6 gap-4" style="background-color:#252525;">
-        <img src="images/maxi-station.png" alt="Station BOD Maxi — grande borne de location de batteries portables 16 slots pour centres commerciaux" style="object-fit:contain;max-height:440px;width:auto;">
+        <img src="images/maxi-24-station-bod-detouree.webp?v=2" alt="Station BOD Maxi — borne sur pied 24 emplacements, écran BOD" width="511" height="1600" style="object-fit:contain;max-height:440px;width:auto;filter:drop-shadow(0 24px 30px rgba(0,0,0,.45));">
         <img src="images/batterie-externe-bod.png" alt="Batterie portable BOD disponible à la location" style="object-fit:contain;max-height:200px;width:auto;">
       </div>
     </div>
 
   </section>
+  <div class="st-dots" id="st-dots" aria-hidden="true"><button type="button" class="on"></button><button type="button"></button><button type="button"></button></div>
 
   <!-- PERSONNALISATION -->
-  <section class="bg-surface-container-low" style="padding-top:96px;padding-bottom:0;">
+  <section class="bg-surface-container-low" style="padding-top:clamp(44px,7vw,96px);padding-bottom:0;">
     <div class="max-w-7xl mx-auto px-6">
 
       <!-- Header + prix -->
-      <div class="reveal" style="margin-bottom:72px;">
+      <div class="reveal" style="margin-bottom:20px;">
         <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant" style="margin-bottom:24px;" data-i18n="produits.wrap.label">Personnalisation</div>
         <div class="flex flex-col lg:flex-row lg:items-end gap-6 justify-between" style="margin-bottom:48px;">
           <h2 class="text-3xl md:text-5xl font-black tracking-tighter text-on-surface max-w-xl" data-i18n="produits.wrap.h2">La station s'adapte<br/>à votre univers.</h2>
           <p class="text-on-surface-variant text-lg leading-relaxed max-w-md" data-i18n="produits.wrap.p">Wrap vinyl full-cover aux couleurs de votre établissement — logo, ambiance, code couleur. Pose incluse.</p>
         </div>
         <!-- Sélecteur wrap -->
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
-          <button onclick="selectWrap('basic')" id="wrap-btn-basic" style="background:#1b1c1c;border:none;border-radius:1.25rem;padding:20px 28px;display:flex;flex-direction:column;gap:4px;min-width:130px;cursor:pointer;transition:all 0.2s;outline:none;">
-            <span style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(208,255,0,0.6);">Basic</span>
-            <span style="font-size:28px;font-weight:900;color:#D0FF00;line-height:1;">30 €</span>
+        <div class="wrap-sel" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:0;">
+          <button onclick="selectWrap('basic')" id="wrap-btn-basic" style="background:#dedad6;border:2px solid #dedad6;border-radius:1.25rem;padding:20px 28px;display:flex;flex-direction:column;gap:4px;min-width:130px;cursor:pointer;transition:all 0.2s;outline:none;">
+            <span style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(27,28,28,0.5);">Basic</span>
+            <span style="font-size:28px;font-weight:900;color:#1b1c1c;line-height:1;">30 €</span>
           </button>
           <button onclick="selectWrap('medium')" id="wrap-btn-medium" style="background:#fff;border:2px solid rgba(27,28,28,0.08);border-radius:1.25rem;padding:20px 28px;display:flex;flex-direction:column;gap:4px;min-width:130px;cursor:pointer;transition:all 0.2s;outline:none;">
             <span style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(27,28,28,0.4);">Medium</span>
@@ -263,11 +310,10 @@
 
       <!-- Avant / Après slider -->
       <div class="reveal" style="margin-bottom:80px;">
-        <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant" style="margin-bottom:20px;" data-i18n="produits.wrap.ba.label">Avant / Après</div>
         <div class="ba-wrap" style="position:relative;overflow:hidden;border-radius:2rem;width:100%;max-width:760px;aspect-ratio:4/3;background:#e0dbd5;cursor:ew-resize;user-select:none;touch-action:none;">
-          <img id="ba-img-apres" src="images/wrap-apres.png" alt="Station BOD après personnalisation — habillage vinyle aux couleurs de l'établissement" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+          <img id="ba-img-apres" src="images/wrap-apres.webp?v=3" alt="Station BOD après personnalisation — habillage vinyle aux couleurs de l'établissement" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
           <div class="ba-before" style="position:absolute;top:0;left:0;width:50%;height:100%;overflow:hidden;border-right:2px solid rgba(255,255,255,0.9);">
-            <img id="ba-img-avant" src="images/wrap-avant.png" alt="Station BOD avant personnalisation — aspect standard" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+            <img id="ba-img-avant" src="images/wrap-avant.webp?v=3" alt="Station BOD avant personnalisation — aspect standard" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
           </div>
           <div class="ba-handle" style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:44px;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;">
             <div style="width:44px;height:44px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 16px rgba(0,0,0,0.18);">
@@ -280,9 +326,9 @@
 
       <script>
         var wrapImages = {
-          basic:  { avant: 'images/wrap-avant.png',   apres: 'images/wrap-apres.png' },
-          medium: { avant: 'images/medium-station.png', apres: 'images/wrap-apres.png' },
-          maxi:   { avant: 'images/maxi-station.png',   apres: 'images/wrap-apres.png' }
+          basic:  { avant: 'images/wrap-avant.webp?v=3',   apres: 'images/wrap-apres.webp?v=3' },
+          medium: { avant: 'images/wrap-medium-avant.webp?v=5', apres: 'images/wrap-medium-apres.webp?v=5' },
+          maxi:   { avant: 'images/wrap-maxi-avant.webp?v=5',   apres: 'images/wrap-maxi-apres.webp?v=5' }
         };
         function selectWrap(type) {
           var btns = { basic: 'wrap-btn-basic', medium: 'wrap-btn-medium', maxi: 'wrap-btn-maxi' };
@@ -296,7 +342,13 @@
           });
           // Active le bouton sélectionné
           var btn = document.getElementById(btns[type]);
-          if (type === 'medium') {
+          if (type === 'basic') {
+            // Basic sélectionné : gris (comme la carte Basic), Medium : lime, Maxi : sombre
+            btn.style.background = '#dedad6';
+            btn.style.border = '2px solid #dedad6';
+            btn.querySelectorAll('span')[0].style.color = 'rgba(27,28,28,0.5)';
+            btn.querySelectorAll('span')[1].style.color = '#1b1c1c';
+          } else if (type === 'medium') {
             btn.style.background = '#D0FF00';
             btn.style.border = '2px solid #D0FF00';
             btn.querySelectorAll('span')[0].style.color = 'rgba(27,28,28,0.5)';
@@ -338,71 +390,27 @@
 
     </div>
 
-    <!-- Marquee Instagram — pleine largeur -->
-    <div class="reveal" style="padding-bottom:96px;">
-      <div class="max-w-7xl mx-auto px-6" style="margin-bottom:20px;">
-        <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant" data-i18n="produits.wrap.insta.label">Vu sur Instagram</div>
+    <!-- Bandeau de photos qui défile — pleine largeur -->
+    <div class="reveal" style="padding-bottom:clamp(40px,6vw,72px);">
+      <div class="max-w-7xl mx-auto px-6" style="margin-bottom:24px;">
+        <h2 class="text-2xl md:text-4xl font-black tracking-tighter text-on-surface">BOD, là où vos clients en ont besoin.</h2>
       </div>
-      <div style="overflow:hidden;width:100%;">
-        <div class="insta-marquee" style="display:flex;gap:12px;width:max-content;">
-          <!-- 7 posts originaux -->
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#e0dbd5;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.15;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(27,28,28,0.25);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#1b1c1c;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#D0FF00"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(208,255,0,0.3);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#D0FF00;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(27,28,28,0.3);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#1b1c1c;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#D0FF00"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(208,255,0,0.3);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#e0dbd5;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.15;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(27,28,28,0.25);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#D0FF00;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(27,28,28,0.3);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#1b1c1c;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#D0FF00"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(208,255,0,0.3);">@bodcharge</span>
-          </div>
-          <!-- Duplicate pour loop sans-couture -->
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#e0dbd5;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.15;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(27,28,28,0.25);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#1b1c1c;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#D0FF00"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(208,255,0,0.3);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#D0FF00;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(27,28,28,0.3);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#1b1c1c;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#D0FF00"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(208,255,0,0.3);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#e0dbd5;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.15;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(27,28,28,0.25);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#D0FF00;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#1b1c1c"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(27,28,28,0.3);">@bodcharge</span>
-          </div>
-          <div style="width:160px;aspect-ratio:3/4;border-radius:1.25rem;background:#1b1c1c;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow:hidden;">
-            <svg viewBox="0 0 32 32" width="24" height="24" style="opacity:0.2;"><path d="M18 9L13.5 18H17.5L15.5 26L22.5 15H18.5L20.5 9H18Z" fill="#D0FF00"/></svg>
-            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(208,255,0,0.3);">@bodcharge</span>
-          </div>
+      <div class="photo-band">
+        <div class="photo-track">
+          <img src="images/bande-secteur-restaurant.webp?v=2" alt="Station de recharge sur le comptoir d'un restaurant" width="640" height="640" decoding="async"/>
+          <img src="images/bande-etape-2-location.webp?v=2" alt="Téléphone en charge sur une batterie externe BOD" width="800" height="640" decoding="async"/>
+          <img src="images/bande-secteur-centre-commercial.webp?v=2" alt="Borne de recharge dans la galerie d'un centre commercial" width="640" height="640" decoding="async"/>
+          <img src="images/bande-etape-1-scan.webp?v=2" alt="Station BOD habillée aux couleurs d'un restaurant" width="800" height="640" decoding="async"/>
+          <img src="images/bande-secteur-hotel.webp?v=2" alt="Station de recharge à la réception d'un hôtel" width="640" height="640" decoding="async"/>
+          <img src="images/bande-station-metro.webp?v=2" alt="Borne BOD dans une station de métro" width="640" height="640" decoding="async"/>
+          <img src="images/bande-evenementiel.webp?v=2" alt="Station BOD 12 emplacements sur le comptoir d'accueil d'une salle événementielle" width="800" height="640" decoding="async"/>
+          <img src="images/bande-secteur-restaurant.webp?v=2" alt="" width="640" height="640" decoding="async" aria-hidden="true"/>
+          <img src="images/bande-etape-2-location.webp?v=2" alt="" width="800" height="640" decoding="async" aria-hidden="true"/>
+          <img src="images/bande-secteur-centre-commercial.webp?v=2" alt="" width="640" height="640" decoding="async" aria-hidden="true"/>
+          <img src="images/bande-etape-1-scan.webp?v=2" alt="" width="800" height="640" decoding="async" aria-hidden="true"/>
+          <img src="images/bande-secteur-hotel.webp?v=2" alt="" width="640" height="640" decoding="async" aria-hidden="true"/>
+          <img src="images/bande-station-metro.webp?v=2" alt="" width="640" height="640" decoding="async" aria-hidden="true"/>
+          <img src="images/bande-evenementiel.webp?v=2" alt="" width="800" height="640" decoding="async" aria-hidden="true"/>
         </div>
       </div>
     </div>
@@ -459,7 +467,7 @@
   </script>
 
   <!-- PUBLICITÉ TEASER -->
-  <section class="max-w-7xl mx-auto px-6" style="padding-top:120px;padding-bottom:80px;">
+  <section class="max-w-7xl mx-auto px-6" style="padding-top:clamp(40px,6vw,72px);padding-bottom:clamp(40px,6vw,80px);">
     <div class="reveal bg-on-surface rounded-[2.5rem] p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8">
       <div>
         <div class="text-xs font-bold uppercase tracking-widest text-primary mb-4" data-i18n="produits.pub.label">Écran publicitaire</div>
@@ -499,15 +507,18 @@
 
       <div>
         <a href="index.html" style="display:inline-block;margin-bottom:16px;">
-          <img src="/images/logo-bod.png" alt="Bod" style="height:38px;width:auto;"/>
+          <img src="images/logo-bod.png" alt="Bod" style="height:38px;width:auto;"/>
         </a>
         <p style="font-size:.875rem;color:rgba(27,28,28,0.45);max-width:220px;line-height:1.65;margin:0;" data-i18n="footer.tagline">La batterie de vos clients, c'est notre affaire.</p>
         <div style="display:flex;gap:12px;margin-top:16px;">
-          <a href="https://www.instagram.com/bod.charge/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='rgba(27,28,28,0.14)'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
+          <a href="https://www.instagram.com/bod.charge/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='#D0FF00'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="5.5" stroke="#1b1c1c" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" stroke="#1b1c1c" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="#1b1c1c"/></svg>
           </a>
-          <a href="https://www.linkedin.com/company/bodcharge/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='rgba(27,28,28,0.14)'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
+          <a href="https://www.linkedin.com/company/bodcharge/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='#D0FF00'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#1b1c1c" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="22" height="22" rx="4" fill="#1b1c1c"/><path d="M7 9.5H5v9h2v-9ZM6 8.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5ZM19 13.2c0-2.5-1.1-4-3.2-4-1.1 0-2 .6-2.3 1.5V9.5h-2v9h2v-5c0-1.3.6-2.2 1.8-2.2 1.1 0 1.7.8 1.7 2.2v5H19v-5.3Z" fill="white"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@bod.charge" aria-label="TikTok" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(27,28,28,0.07);transition:background .15s;" onmouseover="this.style.background='#D0FF00'" onmouseout="this.style.background='rgba(27,28,28,0.07)'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1b1c1c" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
           </a>
         </div>
       </div>
@@ -515,21 +526,21 @@
       <div>
         <div style="font-size:.625rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgba(27,28,28,0.3);margin-bottom:18px;">Navigation</div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <a href="produits.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Produits</a>
-          <a href="tarifs.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Tarifs</a>
-          <a href="lieux.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Lieux</a>
-          <a href="publicite.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Publicité</a>
-          <a href="blog.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Blog</a>
+          <a href="produits.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Produits</a>
+          <a href="tarifs.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Tarifs</a>
+          <a href="lieux.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Lieux</a>
+          <a href="publicite.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Publicité</a>
+          <a href="blog.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Blog</a>
         </div>
       </div>
 
       <div>
         <div style="font-size:.625rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgba(27,28,28,0.3);margin-bottom:18px;">Contact</div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <a href="contact.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Nous contacter</a>
-          <a href="mailto:hello@bodcharge.com" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">hello@bodcharge.com</a>
-          <a href="a-propos.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">À propos</a>
-          <a href="mentions-legales.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;transition:opacity .15s;" onmouseover="this.style.opacity='.4'" onmouseout="this.style.opacity='1'">Mentions légales</a>
+          <a href="contact.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Nous contacter</a>
+          <a href="mailto:bod.chargefr@gmail.com" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">bod.chargefr@gmail.com</a>
+          <a href="a-propos.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">À propos</a>
+          <a href="mentions-legales.html" style="font-size:.9375rem;font-weight:500;color:#1b1c1c;text-decoration:none;">Mentions légales</a>
         </div>
       </div>
 
@@ -560,5 +571,46 @@
   reveals.forEach(el => observer.observe(el));
 </script>
 
+<script>
+/* Bandeau de photos : il défile tout seul en continu. On peut aussi le faire glisser (doigt, souris, molette horizontale) pour aller plus vite ;
+   le défilement automatique reprend peu après. Les photos sont présentes deux fois : arrivé à la moitié, on revient au début sans que ça se voie.
+   La bande est déplacée par une transformation (et non par le défilement du navigateur, qui arrondit au pixel et saccade à faible vitesse). */
+(function () {
+  var band = document.querySelector('.photo-band'); if (!band) return;
+  var track = band.querySelector('.photo-track');
+  var auto = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var x = 0, hold = 0, last = 0, drag = null, SPEED = 38;                       // pixels par seconde
+  function half() { return (track.scrollWidth + parseFloat(getComputedStyle(track).columnGap || 16)) / 2; }
+  function put() { var h = half(); if (h > 0) { x %= h; if (x < 0) x += h; } track.style.transform = 'translate3d(' + (-x).toFixed(2) + 'px,0,0)'; }
+  function tick(t) {
+    var dt = Math.min(50, t - (last || t)); last = t;
+    if (auto && !drag && t > hold) { x += SPEED * dt / 1000; put(); }
+    requestAnimationFrame(tick);
+  }
+  band.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse' && e.button) return; drag = { x: e.clientX, y: e.clientY, s: x, on: e.pointerType === 'mouse' }; if (drag.on) { band.classList.add('is-drag'); e.preventDefault(); } });
+  window.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.on) { if (Math.abs(dx) < 6 || Math.abs(dy) > Math.abs(dx)) return; drag.on = true; band.classList.add('is-drag'); }          // au doigt : seulement si le geste est horizontal, pour laisser défiler la page
+    x = drag.s - dx; put();
+  });
+  function drop() { if (drag) { drag = null; band.classList.remove('is-drag'); hold = performance.now() + 1200; } }
+  window.addEventListener('pointerup', drop); window.addEventListener('pointercancel', drop);
+  band.addEventListener('wheel', function (e) { var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0); if (!d) return; e.preventDefault(); x += d; put(); hold = performance.now() + 1200; }, { passive: false });
+  window.addEventListener('resize', put);
+  put(); requestAnimationFrame(tick);
+})();
+
+  // Téléphone : les stations défilent au doigt ; le point allumé suit la carte affichée
+  (function () {
+    var row = document.querySelector('.stations-sec'), dots = document.querySelectorAll('#st-dots button');
+    if (!row || !dots.length) return;
+    var cards = row.querySelectorAll('.station-card');
+    function cur() { var best = 0, d = 1e9; cards.forEach(function (c, i) { var x = Math.abs(c.offsetLeft - row.offsetLeft - row.scrollLeft - 24); if (x < d) { d = x; best = i; } }); return best; }
+    function paint() { var n = cur(); dots.forEach(function (b, i) { b.classList.toggle('on', i === n); }); }
+    row.addEventListener('scroll', function () { window.requestAnimationFrame(paint); }, { passive: true });
+    dots.forEach(function (b, i) { b.addEventListener('click', function () { row.scrollTo({ left: cards[i].offsetLeft - row.offsetLeft - 24, behavior: 'smooth' }); }); });
+  })();
+</script>
 </body>
 </html>

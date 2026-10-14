@@ -20,7 +20,7 @@ const translations = {
     'footer.legal': 'Mentions légales',
 
     // INDEX — hero
-    'hero.h1': 'Vos clients ne tomberont plus à court de <span class="text-primary-container bg-on-surface px-2 whitespace-nowrap">batterie.</span>',
+    'hero.h1': 'Vos clients ne tomberont plus à court de <span class="bod-hl">batterie.</span>',
     'hero.p': 'Bod installe des stations de location de batteries portables dans votre établissement, gratuitement, sans engagement, personnalisées à vos couleurs.',
     'hero.cta1': 'Installer une station',
     'hero.cta2': 'Comment ça marche',
@@ -69,7 +69,7 @@ const translations = {
 
     // TARIFS
     'tarifs.label': 'Tarifs',
-    'tarifs.h1': 'Transparent.<br/>Sans surprise.',
+    'tarifs.h1': 'Transparent.<br/>Sans <span class="bod-hl">surprise.</span>',
     'tarifs.intro': 'Un modèle simple : gratuit pour l\'établissement, accessible pour l\'utilisateur.',
     'tarifs.user.label': 'Pour vos clients',
     'tarifs.user.sub': 'par tranche de 30 minutes',
@@ -120,9 +120,15 @@ const translations = {
 
     // LIEUX
     'lieux.label': 'Lieux',
-    'lieux.h1': 'BOD arrive<br/>bientôt<br/><span class="text-primary-container bg-on-surface px-2 whitespace-nowrap">près de vous.</span>',
+    'lieux.h1': 'BOD arrive bientôt <span class="bod-hl">près de vous.</span>',
     'lieux.intro': 'Notre réseau est en cours de déploiement. Les premières stations seront en ligne dans les prochaines semaines.',
     'lieux.map.label': 'Exemple — à quoi ressemblera la carte',
+    'lieux.sheet.title': 'Pas encore de station ici',
+    'lieux.sheet.text': 'BOD arrive bientôt. Soyez prévenu dès qu\'une station ouvre près de vous.',
+    'lieux.sheet.btn': 'Me prévenir',
+    'lieux.sheet.b1': 'Tarifs',
+    'lieux.sheet.b2': 'Comment ça marche',
+    'lieux.sheet.cta': 'Me prévenir à l\'ouverture',
     'lieux.deploy.label': 'Déploiement',
     'lieux.deploy.h2': 'Comment ça se passe ?',
     'lieux.deploy.sub': 'Le réseau grandit au rythme des partenaires. Chaque établissement signé = une station de plus sur la carte.',
@@ -144,7 +150,7 @@ const translations = {
 
     // CONTACT
     'contact.label': 'Contact',
-    'contact.h1': 'Une question ?<br/><span class="text-primary-container bg-on-surface px-2">On répond.</span>',
+    'contact.h1': 'Une question ?<br/><span class="bod-hl">On répond.</span>',
     'contact.intro': 'Utilisateur, presse, partenariat — écrivez-nous. Réponse sous 24h.',
     'contact.form.name': 'Nom',
     'contact.form.email': 'Email',
@@ -166,11 +172,11 @@ const translations = {
     'contact.sidebar.venue.p': 'Déposez directement une demande de partenariat pour une réponse prioritaire.',
     'contact.sidebar.venue.cta': 'Devenir partenaire',
     'contact.sidebar.press.h3': 'Presse & Médias',
-    'contact.sidebar.press.p': 'Pour toute demande presse, interview ou partenariat éditorial, écrivez directement à <a href="mailto:hello@bodcharge.com" class="font-semibold text-primary hover:underline">hello@bodcharge.com</a> avec "Presse" en objet.',
+    'contact.sidebar.press.p': 'Pour toute demande presse, interview ou partenariat éditorial, écrivez directement à <a href="mailto:bod.chargefr@gmail.com" class="font-semibold text-primary hover:underline">bod.chargefr@gmail.com</a> avec "Presse" en objet.',
 
     // PRODUITS
     'produits.label': 'Nos stations',
-    'produits.h1': 'Un modèle pour<br/>chaque établissement.',
+    'produits.h1': 'Un modèle pour chaque <span class="bod-hl">établissement.</span>',
     'produits.intro': 'Basic, Medium ou Maxi — chaque station est gratuite à l\'installation et maintenue par BOD.',
     'produits.cta': 'Demander cette station',
     'produits.basic.badge': 'Compact',
@@ -184,7 +190,7 @@ const translations = {
     'produits.medium.popular': 'La plus populaire',
     'produits.medium.name': 'Medium Station',
     'produits.medium.tagline': 'Le bon équilibre.',
-    'produits.medium.f1': 'Sur pied ou mural — s\'intègre partout',
+    'produits.medium.f1': 'Format comptoir — grand écran',
     'produits.medium.f2': 'Idéal pour les flux de 200 à 600 personnes/jour',
     'produits.medium.f3': 'Rotation complète en ~2h',
     'produits.medium.f4': 'Wrap vinyl personnalisé disponible dès 60 €',
@@ -210,6 +216,8 @@ const translations = {
     'produits.wrap.visual.sub': 'L\'écran reste celui de BOD.',
     'produits.wrap.visual.note': 'Pose incluse',
     'produits.wrap.slider.label': 'Exemples d\'installations',
+    'produits.wrap.ba.avant': 'Avant',
+    'produits.wrap.ba.apres': 'Après',
     'produits.pub.label': 'Écran publicitaire',
     'produits.pub.h2': 'Votre station<br/>parle à vos clients.',
     'produits.pub.intro': 'Chaque station est équipée d\'un écran. Il peut diffuser vos propres contenus ou accueillir des campagnes publicitaires — photos ou vidéos en boucle, ciblées sur vos clients au moment exact où ils rechargent.',
@@ -225,7 +233,7 @@ const translations = {
 
     // PAGE PUBLICITÉ
     'pub.label': 'Écran publicitaire',
-    'pub.h1': 'Votre station<br/>parle à vos clients.',
+    'pub.h1': 'Votre station parle à vos <span class="bod-hl">clients.</span>',
     'pub.intro': 'Chaque station BOD est équipée d\'un écran intégré. Diffusez votre propre contenu — ou monétisez cet espace en accueillant des campagnes publicitaires locales ou nationales.',
     'pub.own.tag': 'Inclus sur demande',
     'pub.own.title': 'Votre contenu',
@@ -277,7 +285,7 @@ const translations = {
     'footer.legal': 'Legal notice',
 
     // INDEX — hero
-    'hero.h1': 'Your customers will never run out of <span class="text-primary-container bg-on-surface px-2 whitespace-nowrap">battery.</span>',
+    'hero.h1': 'Your customers will never run out of <span class="bod-hl">battery.</span>',
     'hero.p': 'Bod installs portable battery rental stations in your venue, for free, with no commitment, customised to your brand.',
     'hero.cta1': 'Install a station',
     'hero.cta2': 'How it works',
@@ -326,7 +334,7 @@ const translations = {
 
     // TARIFS
     'tarifs.label': 'Pricing',
-    'tarifs.h1': 'Transparent.<br/>No surprises.',
+    'tarifs.h1': 'Transparent.<br/>No <span class="bod-hl">surprises.</span>',
     'tarifs.intro': 'A simple model: free for the venue, affordable for the user.',
     'tarifs.user.label': 'For your customers',
     'tarifs.user.sub': 'per 30-minute block',
@@ -377,9 +385,15 @@ const translations = {
 
     // LIEUX
     'lieux.label': 'Locations',
-    'lieux.h1': 'BOD is coming<br/>soon<br/><span class="text-primary-container bg-on-surface px-2 whitespace-nowrap">near you.</span>',
+    'lieux.h1': 'BOD is coming soon <span class="bod-hl">near you.</span>',
     'lieux.intro': 'Our network is being deployed. The first stations will go live in the coming weeks.',
     'lieux.map.label': 'Example — what the map will look like',
+    'lieux.sheet.title': 'No station here yet',
+    'lieux.sheet.text': 'BOD is coming soon. Get notified as soon as a station opens near you.',
+    'lieux.sheet.btn': 'Notify me',
+    'lieux.sheet.b1': 'Pricing',
+    'lieux.sheet.b2': 'How it works',
+    'lieux.sheet.cta': 'Notify me at launch',
     'lieux.deploy.label': 'Rollout',
     'lieux.deploy.h2': 'How does it work?',
     'lieux.deploy.sub': 'The network grows with each new partner. Every signed venue = one more station on the map.',
@@ -401,7 +415,7 @@ const translations = {
 
     // CONTACT
     'contact.label': 'Contact',
-    'contact.h1': 'Got a question?<br/><span class="text-primary-container bg-on-surface px-2">We\'ll answer.</span>',
+    'contact.h1': 'Got a question?<br/><span class="bod-hl">We\'ll answer.</span>',
     'contact.intro': 'User, press, partnership — write to us. Reply within 24h.',
     'contact.form.name': 'Name',
     'contact.form.email': 'Email',
@@ -423,11 +437,11 @@ const translations = {
     'contact.sidebar.venue.p': 'Submit a partnership request directly for a priority response.',
     'contact.sidebar.venue.cta': 'Become a partner',
     'contact.sidebar.press.h3': 'Press & Media',
-    'contact.sidebar.press.p': 'For any press enquiry, interview or editorial partnership, write directly to <a href="mailto:hello@bodcharge.com" class="font-semibold text-primary hover:underline">hello@bodcharge.com</a> with "Press" in the subject line.',
+    'contact.sidebar.press.p': 'For any press enquiry, interview or editorial partnership, write directly to <a href="mailto:bod.chargefr@gmail.com" class="font-semibold text-primary hover:underline">bod.chargefr@gmail.com</a> with "Press" in the subject line.',
 
     // PRODUITS
     'produits.label': 'Our stations',
-    'produits.h1': 'One model for<br/>every venue.',
+    'produits.h1': 'One model for every <span class="bod-hl">venue.</span>',
     'produits.intro': 'Basic, Medium or Maxi — every station is free to install and maintained by BOD.',
     'produits.cta': 'Request this station',
     'produits.basic.badge': 'Compact',
@@ -441,7 +455,7 @@ const translations = {
     'produits.medium.popular': 'Most popular',
     'produits.medium.name': 'Medium Station',
     'produits.medium.tagline': 'The right balance.',
-    'produits.medium.f1': 'Floor stand or wall-mounted — fits anywhere',
+    'produits.medium.f1': 'Countertop format — large screen',
     'produits.medium.f2': 'Ideal for venues with 200 to 600 visitors/day',
     'produits.medium.f3': 'Full rotation in ~2h',
     'produits.medium.f4': 'Vinyl wrap available from €60',
@@ -467,6 +481,8 @@ const translations = {
     'produits.wrap.visual.sub': 'The screen stays BOD.',
     'produits.wrap.visual.note': 'Installation included',
     'produits.wrap.slider.label': 'Installation examples',
+    'produits.wrap.ba.avant': 'Before',
+    'produits.wrap.ba.apres': 'After',
     'produits.pub.label': 'Advertising screen',
     'produits.pub.h2': 'Your station<br/>speaks to your customers.',
     'produits.pub.intro': 'Every station has a screen. It can display your own content or host advertising campaigns — photos or looping videos, reaching your customers at the exact moment they charge.',
@@ -482,7 +498,7 @@ const translations = {
 
     // PAGE PUBLICITÉ (EN)
     'pub.label': 'Advertising screen',
-    'pub.h1': 'Your station<br/>speaks to your customers.',
+    'pub.h1': 'Your station speaks to your <span class="bod-hl">customers.</span>',
     'pub.intro': 'Every BOD station has an integrated screen. Broadcast your own content — or monetize that space by hosting local or national ad campaigns.',
     'pub.own.tag': 'Available on request',
     'pub.own.title': 'Your content',
