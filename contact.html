@@ -148,10 +148,18 @@
           btn.textContent = 'Envoi en cours…';
           const data = Object.fromEntries(new FormData(this));
           try {
-            /* 14/10/2026 : la demande part par e-mail vers bod.chargefr@gmail.com (avant : serveur d'automatisation d'Alexis). La messagerie du visiteur s'ouvre avec le message déjà rempli. */
-            const L = {"nom": "Nom", "email": "E-mail", "sujet": "Sujet", "message": "Message"};
-            const txt = Object.keys(L).filter(k => data[k]).map(k => L[k] + ' : ' + data[k]).join('\n');
-            location.href = 'mailto:bod.chargefr@gmail.com?subject=' + encodeURIComponent('BOD — ' + (data.sujet || 'Contact') + ' — ' + (data.nom || '')) + '&body=' + encodeURIComponent(txt);
+            /* 14/10/2026 : la demande part d'abord vers l'automatisation n8n (qui l'enregistre dans Airtable, comme avant).
+               Si n8n ne répond pas, la messagerie du visiteur s'ouvre avec le message déjà rempli vers bod.chargefr@gmail.com. */
+            let ok = false;
+            try {
+              const r = await fetch('https://n8n.vooolt.fr/webhook/bod-contact', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
+              ok = r.ok;
+            } catch (e2) {}
+            if (!ok) {
+              const L = {"nom": "Nom", "email": "E-mail", "sujet": "Sujet", "message": "Message"};
+              const txt = Object.keys(L).filter(k => data[k]).map(k => L[k] + ' : ' + data[k]).join('\n');
+              location.href = 'mailto:bod.chargefr@gmail.com?subject=' + encodeURIComponent('BOD — ' + (data.sujet || 'Contact') + ' — ' + (data.nom || '')) + '&body=' + encodeURIComponent(txt);
+            }
             this.classList.add('hidden');
             document.getElementById('form-success').classList.remove('hidden');
           } catch(err) {
