@@ -40,6 +40,15 @@
   .faq-item summary::-webkit-details-marker { display: none; }
   @media (min-width: 768px) { #menu-toggle { display: none !important; } #mobile-menu { display: none !important; } .nav-desktop-cta { display: inline-flex !important; } }
   @media (max-width: 767px) { .nav-desktop-cta { display: none !important; } #menu-toggle { display: flex !important; } }
+  /* Onglets des tarifs : téléphone et tablette uniquement (14/10/2026) */
+  .tarif-tabs{display:none}
+  @media (max-width:1023px){
+    .tarif-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:16px;background:#ECE9E6;border-radius:999px}
+    .tarif-tabs button{border:0;background:transparent;border-radius:999px;padding:12px 8px;font:inherit;font-weight:800;font-size:.9375rem;line-height:1.15;color:#5d5f5f;cursor:pointer;transition:background .2s,color .2s}
+    .tarif-tabs button[aria-selected="true"]{background:#1C1D1D;color:#D0FF00}
+    .tarif-carte.is-off{display:none}
+    .tarif-carte{opacity:1!important;transform:none!important;transition-delay:0s!important}
+  }
 </style>
 </head>
 <body class="bg-surface text-on-surface selection:bg-primary-container">
@@ -101,10 +110,15 @@
 
   <!-- DEUX CARTES TARIFS -->
   <section class="max-w-7xl mx-auto px-6 pb-20 md:pb-32">
+    <!-- 14/10/2026 : sur téléphone et tablette, deux onglets au lieu des deux cartes l'une sous l'autre (ordinateur inchangé) -->
+    <div class="tarif-tabs" role="tablist" aria-label="Choisir les tarifs">
+      <button type="button" role="tab" id="tab-clients" aria-controls="carte-clients" aria-selected="true">Pour vos clients</button>
+      <button type="button" role="tab" id="tab-etab" aria-controls="carte-etab" aria-selected="false" tabindex="-1">Pour votre établissement</button>
+    </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- Carte utilisateur -->
-      <div class="reveal card-lift bg-surface-container-low rounded-[2.5rem] p-8 md:p-12">
+      <div id="carte-clients" role="tabpanel" aria-labelledby="tab-clients" class="tarif-carte reveal card-lift bg-surface-container-low rounded-[2.5rem] p-8 md:p-12">
         <!-- 14/10/2026 : titre à côté de l'icône, plus gros (demande de Jules) -->
         <div class="flex items-center mb-8" style="gap:16px">
           <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center shrink-0">
@@ -158,7 +172,7 @@
       </div>
 
       <!-- Carte établissement -->
-      <div class="reveal reveal-delay-1 card-lift bg-primary-container rounded-[2.5rem] p-8 md:p-12 flex flex-col">
+      <div id="carte-etab" role="tabpanel" aria-labelledby="tab-etab" class="tarif-carte is-off reveal reveal-delay-1 card-lift bg-primary-container rounded-[2.5rem] p-8 md:p-12 flex flex-col">
         <!-- 14/10/2026 : titre à côté de l'icône, plus gros (demande de Jules) -->
         <div class="flex items-center mb-8" style="gap:16px">
           <div class="w-14 h-14 bg-on-surface rounded-2xl flex items-center justify-center shrink-0">
@@ -375,5 +389,18 @@
   reveals.forEach(el => observer.observe(el));
 </script>
 
+<script>
+/* Onglets des tarifs (téléphone et tablette) */
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('.tarif-tabs [role="tab"]'));
+  function choisir(b){
+    tabs.forEach(function(x){var on=x===b;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;document.getElementById(x.getAttribute('aria-controls')).classList.toggle('is-off',!on);});
+  }
+  tabs.forEach(function(b,i){
+    b.addEventListener('click',function(){choisir(b);});
+    b.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'){var n=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];choisir(n);n.focus();}});
+  });
+})();
+</script>
 </body>
 </html>
