@@ -148,11 +148,11 @@
           btn.textContent = 'Envoi en cours…';
           const data = Object.fromEntries(new FormData(this));
           try {
-            /* 14/10/2026 : la demande part d'abord vers l'automatisation n8n (qui l'enregistre dans Airtable, comme avant).
-               Si n8n ne répond pas, la messagerie du visiteur s'ouvre avec le message déjà rempli vers bod.chargefr@gmail.com. */
+            /* 14/10/2026 : la demande est enregistrée directement dans la base Airtable de Jules (api/demande.js, sur Vercel).
+               Si l'enregistrement échoue, la messagerie du visiteur s'ouvre avec le message déjà rempli vers bod.chargefr@gmail.com. */
             let ok = false;
             try {
-              const r = await fetch('https://n8n.vooolt.fr/webhook/bod-contact', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
+              const r = await fetch('/api/demande', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(Object.assign({formulaire: 'contact'}, data))});
               ok = r.ok;
             } catch (e2) {}
             if (!ok) {
