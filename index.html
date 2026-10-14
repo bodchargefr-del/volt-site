@@ -183,6 +183,20 @@
     .how-desc { font-size: .9375rem; line-height: 1.5; }
     .how-bar { display: none; }
   }
+
+  /* Bandeau des chiffres (14/10/2026) */
+  .stats-band{padding:clamp(40px,6vw,72px) 0}
+  .stats-grid{max-width:80rem;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr)}
+  .stat{padding:8px clamp(18px,2.4vw,36px);border-left:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column}
+  .stat:first-child{border-left:0;padding-left:0}
+  .stat-ic{font-size:26px;color:#D0FF00;margin-bottom:14px}
+  .stat-num{font-size:clamp(2.75rem,4.2vw,3.75rem);font-weight:900;letter-spacing:-.04em;line-height:1;color:#D0FF00;margin-bottom:12px;white-space:nowrap}
+  .stat-txt{font-size:.9375rem;line-height:1.45;color:rgba(255,255,255,.68);margin:0}
+  .stat-txt strong{display:block;margin-top:6px;color:#fff;font-weight:700}
+  .stat-src{font-size:.75rem;color:rgba(255,255,255,.32);text-decoration:underline;text-underline-offset:2px;transition:color .2s}
+  .stat-src:hover{color:rgba(255,255,255,.65)}
+  @media (max-width:1023px){.stats-grid{grid-template-columns:repeat(2,1fr);row-gap:40px}.stat:nth-child(3){border-left:0;padding-left:0}}
+  @media (max-width:639px){.stats-grid{grid-template-columns:1fr;row-gap:0}.stat,.stat:nth-child(3){border-left:0;padding:26px 0;border-top:1px solid rgba(255,255,255,.1)}.stat:first-child{border-top:0;padding-top:0}.stat:last-child{padding-bottom:0}}
 </style>
 <script type="application/ld+json">
 {
@@ -351,23 +365,28 @@
     </div>
   </section>
 
-  <!-- STATS BAND -->
-  <section class="bg-on-surface py-10">
-    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-white/10">
-      <div class="reveal px-8 py-6 text-center md:text-left">
-        <div class="text-5xl font-black text-primary-container tracking-tighter mb-1" data-counter data-to="90" data-suffix="%">90%</div>
-        <div class="text-sm text-white/60">des utilisateurs paniquent quand leur batterie est faible</div>
-        <a href="https://electrontogo.com/blog/9-out-of-10-phone-users-have-low-battery-anxiety" target="_blank" rel="noopener" class="text-xs text-white/30 mt-1 hover:text-white/60 underline underline-offset-2 transition-colors block">Source : Electron To Go / Counterpoint Research</a>
+  <!-- STATS BAND (refait le 14/10/2026 : 4 chiffres, icônes, paiement par téléphone) -->
+  <section class="stats-band bg-on-surface">
+    <div class="stats-grid">
+      <div class="stat reveal">
+        <span class="material-symbols-outlined stat-ic" aria-hidden="true">battery_alert</span>
+        <div class="stat-num" data-counter data-to="90" data-suffix="%">90%</div>
+        <p class="stat-txt">des utilisateurs paniquent quand leur batterie est faible</p>
       </div>
-      <div class="reveal reveal-delay-1 px-8 py-6 text-center md:text-left">
-        <div class="text-5xl font-black text-primary-container tracking-tighter mb-1" data-counter data-to="55" data-suffix="%">55%</div>
-        <div class="text-sm text-white/60">des établissements constatent une augmentation du temps de visite grâce à la recharge</div>
-        <a href="https://www.thepowerstop.com/post/how-cell-phone-charging-kiosks-boost-customer-experience-in-hospitality-and-retail-a-deep-dive" target="_blank" rel="noopener" class="text-xs text-white/30 mt-1 hover:text-white/60 underline underline-offset-2 transition-colors block">Source : The Power Stop</a>
+      <div class="stat reveal reveal-delay-1">
+        <span class="material-symbols-outlined stat-ic" aria-hidden="true">sentiment_stressed</span>
+        <div class="stat-num" data-counter data-to="38" data-suffix="%">38%</div>
+        <p class="stat-txt">de batterie restante suffit à déclencher le stress&nbsp;: vos clients cherchent déjà une solution</p>
       </div>
-      <div class="reveal reveal-delay-2 px-8 py-6 text-center md:text-left">
-        <div class="text-5xl font-black text-primary-container tracking-tighter mb-1" data-counter data-to="38" data-suffix="%">38%</div>
-        <div class="text-sm text-white/60">de batterie restante suffit à déclencher le stress — les clients cherchent déjà une solution</div>
-        <a href="https://studyfinds.org/phone-panic-battery-life/" target="_blank" rel="noopener" class="text-xs text-white/30 mt-1 hover:text-white/60 underline underline-offset-2 transition-colors block">Source : Talker Research / Study Finds</a>
+      <div class="stat reveal reveal-delay-2">
+        <span class="material-symbols-outlined stat-ic" aria-hidden="true">schedule</span>
+        <div class="stat-num" data-counter data-to="55" data-suffix="%">55%</div>
+        <p class="stat-txt">des établissements constatent que leurs clients restent plus longtemps grâce à la recharge</p>
+      </div>
+      <div class="stat reveal reveal-delay-3">
+        <span class="material-symbols-outlined stat-ic" aria-hidden="true">contactless</span>
+        <div class="stat-num">1 sur 2</div>
+        <p class="stat-txt">des Français paient déjà avec leur téléphone. <strong>Téléphone à plat = pas de paiement.</strong></p>
       </div>
     </div>
   </section>
