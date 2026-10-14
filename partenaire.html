@@ -158,12 +158,12 @@
             <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Type d'établissement</label>
             <div class="custom-select-wrap">
               <select name="type" class="w-full bg-surface-container-low rounded-xl px-4 py-3.5 text-on-surface border-none transition-colors">
-                <option>Bar / Restaurant</option>
-                <option>Hôtel</option>
-                <option>Centre commercial</option>
-                <option>Salle de sport</option>
-                <option>Événementiel</option>
-                <option>Autre</option>
+                <option value="Bar / Restaurant">Bar / Restaurant</option>
+                <option value="Hôtel">Hôtel</option>
+                <option value="Centre commercial">Centre commercial</option>
+                <option value="Salle de sport">Salle de sport</option>
+                <option value="Événementiel">Événementiel</option>
+                <option value="Autre">Autre</option>
               </select>
             </div>
           </div>
@@ -186,7 +186,7 @@
           e.preventDefault();
           const btn = document.getElementById('partenaire-btn');
           btn.disabled = true;
-          btn.textContent = 'Envoi en cours…';
+          btn.textContent = bodT('Envoi en cours…');
           const data = Object.fromEntries(new FormData(this));
           try {
             /* 14/10/2026 : la demande est enregistrée directement dans la base Airtable de Jules (api/demande.js, sur Vercel).
@@ -205,8 +205,8 @@
             document.getElementById('form-success').classList.remove('hidden');
           } catch(err) {
             btn.disabled = false;
-            btn.textContent = 'Envoyer la demande';
-            alert('Erreur, veuillez réessayer.');
+            btn.textContent = bodT('Envoyer la demande');
+            alert(bodT('Erreur, veuillez réessayer.'));
           }
         });
       </script>

@@ -339,6 +339,8 @@
     map.touchZoomRotate.disableRotation();
     map.on('style.load', () => {
       const nomFr = ['coalesce', ['get', 'name:fr'], ['get', 'name_fr'], ['get', 'name:latin'], ['get', 'name']];
+      const nomEn = ['coalesce', ['get', 'name:en'], ['get', 'name_en'], ['get', 'name:latin'], ['get', 'name']];
+      const nomCarte = () => (localStorage.getItem('bod-lang') === 'en' ? nomEn : nomFr);
       map.getStyle().layers.forEach(l => {
         try {
           if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', TERRE);
@@ -349,7 +351,7 @@
           else if (l.type === 'raster') map.setLayoutProperty(l.id, 'visibility', 'none');
           else if (/shield|airport|label_other/.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none');
           else if (l.type === 'symbol') {
-            map.setLayoutProperty(l.id, 'text-field', nomFr);
+            map.setLayoutProperty(l.id, 'text-field', nomCarte());
             const eau = /water/.test(l.id);
             map.setPaintProperty(l.id, 'text-color', eau ? '#6f8500' : /country|city/.test(l.id) ? '#3d3b38' : '#5e5b57');
             map.setPaintProperty(l.id, 'text-halo-color', eau ? 'rgba(220,238,156,.6)' : '#ffffff');
@@ -357,6 +359,13 @@
           }
         } catch (err) { /* une couche qui n'accepte pas le réglage est laissée telle quelle */ }
       });
+    });
+    // Changement de langue : les noms de la carte suivent (français ↔ anglais)
+    window.addEventListener('bod-lang', () => {
+      if (!map.isStyleLoaded()) return;
+      const nomFr = ['coalesce', ['get', 'name:fr'], ['get', 'name_fr'], ['get', 'name:latin'], ['get', 'name']];
+      const nomEn = ['coalesce', ['get', 'name:en'], ['get', 'name_en'], ['get', 'name:latin'], ['get', 'name']];
+      map.getStyle().layers.forEach(l => { if (l.type === 'symbol' && !/shield|airport|label_other/.test(l.id)) { try { map.setLayoutProperty(l.id, 'text-field', localStorage.getItem('bod-lang') === 'en' ? nomEn : nomFr); } catch (e) {} } });
     });
     // Repères BOD : un par station installée (aucun pour l'instant)
     STATIONS.forEach(st => {
@@ -371,11 +380,11 @@
     // « Me localiser » : centre la carte sur le visiteur (rien n'est envoyé ni enregistré)
     const loc = document.getElementById('map-loc');
     loc.addEventListener('click', () => {
-      if (!navigator.geolocation) return say('Localisation indisponible sur cet appareil.');
+      if (!navigator.geolocation) return say(bodT('Localisation indisponible sur cet appareil.'));
       loc.classList.add('busy');
       navigator.geolocation.getCurrentPosition(
         pos => { loc.classList.remove('busy'); map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 11.5, duration: 1400 }); },
-        () => { loc.classList.remove('busy'); say('Localisation refusée ou indisponible.'); },
+        () => { loc.classList.remove('busy'); say(bodT('Localisation refusée ou indisponible.')); },
         { timeout: 8000 });
     });
     window.bodMap = map;
