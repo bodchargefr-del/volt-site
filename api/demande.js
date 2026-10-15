@@ -4,6 +4,10 @@
 //   AIRTABLE_TOKEN : clé d'accès Airtable (droit « data.records:write » sur la base BOD — CRM uniquement)
 //   AIRTABLE_BASE  : identifiant de la base (commence par « app », visible dans l'adresse Airtable)
 // L'e-mail de prévenance est envoyé par une automatisation Airtable (« quand une ligne est créée »).
+// Brouillon de réponse dans Gmail (15/10/2026) : script Google Apps Script sur le compte bod.chargefr@gmail.com.
+//   BROUILLON_URL    : adresse du script (se termine par /exec)
+//   BROUILLON_SECRET : code partagé avec le script (fichier Bod/BROUILLONS GMAIL/code-secret-pour-vercel.txt)
+// Si ces réglages manquent ou si Google ne répond pas, la demande est quand même enregistrée.
 
 const TABLES = {
   partenaire: { table: 'Partenaires', champs: { nom: 'Nom', email: 'Email', etablissement: 'Établissement', type: 'Type', ville: 'Ville', message: 'Message' } },
@@ -11,6 +15,18 @@ const TABLES = {
 };
 
 const propre = v => String(v == null ? '' : v).trim().slice(0, 5000);
+
+async function brouillon(d) {
+  const { BROUILLON_URL, BROUILLON_SECRET } = process.env;
+  if (!BROUILLON_URL || !BROUILLON_SECRET) return;
+  const donnees = { secret: BROUILLON_SECRET, formulaire: d.formulaire };
+  for (const k of ['nom', 'email', 'etablissement', 'type', 'ville', 'sujet', 'message']) donnees[k] = propre(d[k]);
+  try {
+    const ctrl = new AbortController(); const minuterie = setTimeout(() => ctrl.abort(), 8000);
+    await fetch(BROUILLON_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(donnees), redirect: 'follow', signal: ctrl.signal });
+    clearTimeout(minuterie);
+  } catch (e) { console.error('Brouillon Gmail', e && e.message); }
+}
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ ok: false });
@@ -36,7 +52,7 @@ module.exports = async (req, res) => {
       headers: { Authorization: 'Bearer ' + AIRTABLE_TOKEN, 'Content-Type': 'application/json' },
       body: JSON.stringify({ records: [{ fields }], typecast: true }),
     });
-    if (r.ok) return res.status(200).json({ ok: true });
+    if (r.ok) { await brouillon(d); return res.status(200).json({ ok: true }); }
     const err = await r.json().catch(() => ({}));
     const m = /Unknown field name: "([^"]+)"/.exec((err.error && err.error.message) || '');
     if (m && fields[m[1]] !== undefined) { delete fields[m[1]]; continue; }
