@@ -229,25 +229,8 @@
 
   <!-- CTA DOUBLE -->
   <section class="max-w-7xl mx-auto px-6 pb-16 md:pb-32">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 reveal">
-
-      <!-- CTA Utilisateur -->
-      <div id="alerte" style="scroll-margin-top:110px" class="bg-on-surface rounded-[2.5rem] p-10 md:p-14 flex flex-col justify-between gap-10">
-        <div>
-          <div class="text-white/40 text-xs font-bold uppercase tracking-widest mb-5" data-i18n="lieux.cta1.label">Utilisateurs</div>
-          <h3 class="text-4xl md:text-5xl font-black text-primary-container tracking-tighter leading-[0.95]" data-i18n="lieux.cta1.h3">
-            Soyez alerté<br/>à l'ouverture.
-          </h3>
-        </div>
-        <form action="mailto:bod.chargefr@gmail.com" method="get" enctype="text/plain" class="flex flex-col gap-3">
-          <input name="email" type="email" placeholder="votre@email.fr" required
-            style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.12);border-radius:100px;padding:16px 22px;color:#fff;font-size:15px;outline:none;width:100%;"
-            onfocus="this.style.borderColor='rgba(208,255,0,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"/>
-          <button type="submit" class="bg-primary-container text-on-surface px-8 py-4 rounded-full font-black text-base hover:scale-105 active:scale-95 transition-all" data-i18n="lieux.cta1.btn">
-            Me notifier
-          </button>
-        </form>
-      </div>
+    <!-- 15/10/2026 : bloc « Soyez alerté à l'ouverture » retiré (il n'enregistrait rien) ; le bloc établissements prend toute la largeur -->
+    <div class="grid grid-cols-1 gap-6 reveal">
 
       <!-- CTA Etablissement -->
       <div class="bg-primary-container rounded-[2.5rem] p-10 md:p-14 flex flex-col justify-between gap-10">
