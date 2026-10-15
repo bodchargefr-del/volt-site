@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>BOD · Tableau de bord</title>
+<link rel="icon" type="image/png" href="icones/icone-192.png"/>
+<!-- Icône et nom quand on l'ajoute à l'écran d'accueil du téléphone (14/10/2026) -->
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png?v=3"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="BOD"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="theme-color" content="#FBF9F8"/>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css"/>
+<script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+<!-- Tableau de bord privé de Jules (14/10/2026). Mise en page choisie : « A · planète au centre ».
+     V3 : menu du haut = Aujourd'hui / Cette semaine / Ce mois / Cette année / Toutes les années ;
+     accueil = planète + l'essentiel ; menu ☰ = autres pages (Bornes, Alertes, Horaires, Rentabilité, Batteries & cautions, Prospects) ;
+     clic sur une borne = petit résumé sur la carte, 2e clic = page complète de la borne.
+     Couleurs : rouge = borne éteinte / en panne, orange = batterie(s) non rendue(s) depuis plus de 24 h, vert sinon.
+     DONNÉES D'EXEMPLE pour l'instant (aucune borne installée).
+     Plus tard : bornes depuis Airtable, encaissements depuis Stripe, état des bornes depuis la plateforme du fabricant. -->
+<style>
+@font-face{font-family:"Plus Jakarta Sans";font-weight:200 800;font-display:swap;src:url(../fonts/plus-jakarta-sans-latin.woff2) format("woff2")}
+:root{--fond:#FBF9F8;--fond2:#ffffff;--carte:rgba(255,255,255,.88);--plein:#ffffff;--trait:rgba(27,28,28,.08);--texte:#1B1C1C;--doux:rgba(27,28,28,.62);--pale:rgba(27,28,28,.42);--leger:rgba(27,28,28,.05);--lime:#D0FF00;--vert:#4F7A00;--orange:#F28C28;--rouge:#E5484D;--bleu:#3B9EDB;--ombre:0 14px 34px -20px rgba(27,28,28,.28);--r:22px}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--fond);color:var(--texte);font-family:"Plus Jakarta Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+#globe{position:fixed;inset:0}
+.maplibregl-ctrl-attrib{background:rgba(255,255,255,.75)!important;color:var(--pale)!important;font-size:10px}
+.maplibregl-ctrl-attrib a{color:var(--pale)!important}
+.verre{background:var(--carte);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border:1px solid var(--trait);border-radius:var(--r);box-shadow:var(--ombre)}
+.etiq{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pale)}
+.num{font-variant-numeric:tabular-nums}
+.plus{color:var(--vert)}.moins{color:var(--rouge)}
+/* ---------- Barre du haut : logo · périodes · menu ---------- */
+.haut{position:fixed;top:14px;left:16px;right:16px;display:flex;align-items:center;gap:12px;z-index:20}
+.logo{display:flex;align-items:center;gap:10px;padding:10px 16px 10px 12px;border:0;background:var(--carte)}
+.logo img{height:28px;width:auto;display:block}
+.logo span{font-size:12px;color:var(--doux);font-weight:600;border-left:1px solid var(--trait);padding-left:10px}
+.periodes{display:flex;padding:4px;gap:2px;margin:0 auto}
+.periodes button{border:0;background:transparent;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:700;color:var(--doux);white-space:nowrap;transition:background .2s,color .2s}
+.periodes button:hover{color:var(--texte)}
+.periodes button[aria-pressed="true"]{background:var(--lime);color:var(--texte)}
+.burger{display:flex;align-items:center;gap:8px;padding:11px 16px;font-size:13px;font-weight:700;border:1px solid var(--trait)}
+.burger svg{width:18px;height:18px}
+/* ---------- Menu des autres pages ---------- */
+.voile{position:fixed;inset:0;background:rgba(27,28,28,.28);z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
+.voile.on{opacity:1;pointer-events:auto}
+.tiroir{position:fixed;top:0;right:0;bottom:0;width:320px;max-width:86vw;background:var(--fond2);border-left:1px solid var(--trait);z-index:41;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);padding:22px 16px;display:flex;flex-direction:column;gap:4px;overflow:auto}
+.tiroir.on{transform:none}
+.tiroir .etiq{padding:6px 12px 10px}
+.tiroir a{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;color:var(--texte);text-decoration:none;font-weight:700;font-size:15px}
+.tiroir a:hover{background:var(--leger)}
+.tiroir a.actif{background:var(--lime);color:var(--texte)}
+.tiroir a.actif .ico{background:rgba(27,28,28,.1)}
+.tiroir a small{margin-left:auto;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--leger);color:var(--doux)}
+.tiroir a small.chaud{background:var(--rouge);color:#fff}
+.tiroir .ico{width:34px;height:34px;border-radius:10px;background:var(--leger);display:grid;place-items:center;font-size:16px;flex:none}
+/* ---------- Accueil : colonnes flottantes ---------- */
+.gauche{position:fixed;left:16px;top:84px;width:360px;display:flex;flex-direction:column;gap:12px;z-index:4;max-height:calc(100% - 100px);overflow:auto;scrollbar-width:none}
+.gauche::-webkit-scrollbar{display:none}
+.bloc{padding:18px}
+.gros{font-size:46px;font-weight:800;letter-spacing:-.045em;line-height:1;margin:10px 0 8px}
+.ecart{font-size:12.5px;font-weight:700}
+.ecart small{color:var(--pale);font-weight:600;font-size:12px}
+.barres{display:flex;align-items:flex-end;gap:3px;height:64px;margin-top:14px}
+.barres i{flex:1;background:rgba(27,28,28,.14);border-radius:3px 3px 1px 1px;min-height:2px;transition:height .4s cubic-bezier(.2,.8,.2,1)}
+.barres i.der{background:var(--lime);box-shadow:inset 0 0 0 1px rgba(27,28,28,.12)}
+.barres.haute{height:140px}
+.axe{display:flex;justify-content:space-between;font-size:10px;color:var(--pale);margin-top:6px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.duo>div{padding:16px}
+.duo b{display:block;font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-top:6px}
+.duo .sous{font-size:12px;color:var(--doux);font-weight:600;margin-top:6px;line-height:1.55}
+.pastille{display:inline-flex;align-items:center;gap:6px}
+.pastille i{width:7px;height:7px;border-radius:50%}
+.pt,.pastille i,.legende i,.etat i{box-shadow:inset 0 0 0 1px rgba(27,28,28,.22)}
+.alerte{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border:0;border-top:1px solid var(--trait);font-size:13px;width:100%;background:none;text-align:left}
+.alerte:first-child{border-top:0}
+.alerte .pt{width:9px;height:9px;border-radius:50%;margin-top:4px;flex:none}
+.alerte b{display:block;font-weight:700}
+.alerte span{color:var(--doux);font-size:12px}
+.lien{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--vert);text-decoration:none;background:none;border:0;padding:0}
+.droite{position:fixed;right:16px;top:84px;width:350px;max-height:calc(100% - 100px);display:flex;flex-direction:column;z-index:4;overflow:hidden}
+.droite .tete{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px}
+.liste{overflow:auto;padding:0 10px 10px;scrollbar-width:thin}
+.ligne{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;text-align:left;padding:11px 10px;border-radius:14px;transition:background .15s}
+.ligne:hover{background:var(--leger)}
+.ligne .pt{width:9px;height:9px;border-radius:50%;flex:none}
+.ligne .nom{flex:1;min-width:0}
+.ligne .nom b{display:block;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ligne .nom span{font-size:12px;color:var(--doux)}
+.ligne .eur{font-weight:800;font-size:14px;text-align:right}
+.ligne .eur small{display:block;font-size:11px;color:var(--pale);font-weight:600}
+.legende{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:16px;padding:10px 16px;font-size:12px;color:var(--doux);z-index:4;white-space:nowrap}
+.legende span{display:flex;align-items:center;gap:6px}
+.legende i{width:8px;height:8px;border-radius:50%}
+/* ---------- Repères et petit résumé sur la carte ---------- */
+.pin{width:16px;height:16px;border-radius:50%;border:2px solid #1B1C1C;cursor:pointer;animation:pouls 2.4s infinite}
+.pin.sel{width:24px;height:24px;border:3px solid #1B1C1C;outline:3px solid #fff}
+@keyframes pouls{0%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 60%,transparent)}70%{box-shadow:0 0 0 14px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.prospect{width:9px;height:9px;border-radius:50%;background:rgba(27,28,28,.38);border:1.5px solid #fff}
+.maplibregl-popup-content{background:var(--plein)!important;color:var(--texte);border:1px solid var(--trait);border-radius:18px!important;padding:16px!important;box-shadow:0 24px 60px -24px rgba(27,28,28,.35)!important;font-family:inherit;width:270px}
+.maplibregl-popup-content,.maplibregl-popup-content button{font-family:"Plus Jakarta Sans",system-ui,sans-serif!important}
+.maplibregl-popup-tip{border-top-color:var(--plein)!important;border-bottom-color:var(--plein)!important}
+.bulle h3{margin:0;font-size:17px;letter-spacing:-.02em}
+.bulle .s{font-size:12px;color:var(--doux);margin-top:2px}
+.bulle .etat{margin-top:10px}
+.bulle .kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px}
+.bulle .kpi div{background:var(--leger);border-radius:10px;padding:8px}
+.bulle .kpi b{display:block;font-size:15px;font-weight:800}
+.bulle .kpi span{font-size:10.5px;color:var(--doux);font-weight:600}
+.bulle p{font-size:12px;color:var(--doux);margin:10px 0 0;line-height:1.5}
+.bulle p b{color:var(--texte)}
+.bulle .ouvrir{margin-top:12px;width:100%;border:0;background:var(--lime);color:var(--texte);font-weight:800;font-size:13px;padding:10px;border-radius:12px}
+.bulle .astuce{display:block;text-align:center;font-size:10.5px;color:var(--pale);margin-top:6px}
+.etat{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;background:var(--leger)}
+.etat i{width:8px;height:8px;border-radius:50%}
+/* ---------- Pages pleines (menu ☰ et page d'une borne) ---------- */
+.page{position:fixed;inset:0;background:var(--fond);z-index:10;overflow:auto;padding:96px 24px 60px;display:none}
+.page.on{display:block}
+.page .cadre{max-width:1120px;margin:0 auto}
+.page h1{font-size:clamp(30px,4vw,44px);letter-spacing:-.04em;margin:6px 0 4px}
+.page .chapo{color:var(--doux);font-size:14px;margin:0 0 22px;line-height:1.5}
+.retourp{border:0;background:var(--leger);border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--doux)}
+.cartes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.carte{background:var(--plein);border:1px solid var(--trait);border-radius:var(--r);padding:18px}
+.carte b.v{display:block;font-size:28px;font-weight:800;letter-spacing:-.03em;margin-top:8px}
+.carte .sous{font-size:12px;color:var(--doux);margin-top:4px;font-weight:600}
+.deux{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start}
+.filtres{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filtres button{border:1px solid var(--trait);background:transparent;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--doux)}
+.filtres button[aria-pressed="true"]{background:var(--texte);color:#fff;border-color:var(--texte)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pale);padding:10px 12px;border-bottom:1px solid var(--trait);white-space:nowrap}
+td{padding:13px 12px;border-bottom:1px solid var(--trait);white-space:nowrap}
+tbody tr{cursor:pointer;transition:background .15s}
+tbody tr:hover{background:var(--leger)}
+td.d,th.d{text-align:right}
+.tablo{background:var(--plein);border:1px solid var(--trait);border-radius:var(--r);overflow:auto}
+.jauge{height:8px;background:rgba(27,28,28,.08);border-radius:99px;overflow:hidden;min-width:90px}
+.jauge i{display:block;height:100%;background:var(--lime);border-radius:99px}
+.chaleur{display:grid;grid-template-columns:34px repeat(24,minmax(0,1fr));gap:3px;margin-top:12px;align-items:center}
+.chaleur span{font-size:10px;color:var(--pale);font-weight:700}
+.chaleur i{display:block;aspect-ratio:1/1.1;border-radius:3px;background:var(--leger)}
+.chaleur .h{font-size:9.5px;text-align:left;color:var(--pale);white-space:nowrap;overflow:visible}
+.meilleur{margin-top:12px;font-size:13px;line-height:1.6;color:var(--doux)}
+.meilleur b{color:var(--texte)}
+.slots{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+.slots i{width:20px;height:30px;border-radius:6px;background:rgba(27,28,28,.06);border:1.5px solid transparent}
+.slots i.on{background:var(--lime);border-color:rgba(27,28,28,.16)}
+.slots i.loc{background:transparent;border-color:rgba(27,28,28,.35)}
+.slots i.retard{background:var(--orange)}
+.cles{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--doux);margin-top:10px}
+.cles span{display:flex;align-items:center;gap:5px}
+.cles i{width:9px;height:12px;border-radius:3px}
+.retards{margin-top:12px;border-radius:14px;background:rgba(255,159,67,.1);border:1px solid rgba(255,159,67,.3);padding:10px 14px;font-size:13px}
+.retards div{display:flex;justify-content:space-between;gap:8px;padding:5px 0}
+.retards b{color:#B85A00}
+.retards div>span:first-child{white-space:nowrap}
+.retards div>span:last-child{text-align:right}
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kanban .col{background:var(--plein);border:1px solid var(--trait);border-radius:var(--r);padding:14px}
+.kanban .fic{background:#F6F3F2;border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px}
+.kanban .fic span{display:block;font-size:11.5px;color:var(--doux)}
+.histo div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--trait);font-size:13px}
+.histo div:first-child{border-top:0}
+.histo span{color:var(--doux)}
+/* ---------- Téléphone ---------- */
+@media (max-width:1000px){
+  html,body{overflow:visible;height:auto}
+  /* En-tête comme un site : logo + menu en haut, périodes en dessous.
+     En descendant, la ligne du logo s'en va et les périodes restent collées en haut, en transparent ; en remontant, le logo revient. */
+  #globe{position:relative;height:56vh;inset:auto;margin-top:var(--haut-h,116px)}
+  .haut{position:fixed;top:0;left:0;right:0;flex-wrap:wrap;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:var(--fond);border-bottom:1px solid var(--trait);transition:transform .3s cubic-bezier(.2,.8,.2,1),background .3s,border-color .3s}
+  body.replie .haut{transform:translateY(calc(-1 * var(--replie,52px)));background:transparent;border-color:transparent}
+  body.replie .periodes{background:rgba(255,255,255,.72)}
+  .logo{background:none;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;padding:6px 4px}
+  .logo span{display:none}
+  .burger{margin-left:auto;padding:9px 12px}
+  .burger span{display:none}
+  .periodes{order:3;width:100%;margin:0;overflow-x:auto;scrollbar-width:none}
+  .periodes::-webkit-scrollbar{display:none}
+  .periodes button{padding:9px 12px;font-size:12px}
+  .gauche,.droite{position:static;width:auto;max-height:none;margin:12px}
+  .gauche{margin-top:-36px;position:relative;left:auto;top:auto}
+  .droite{overflow:visible}
+  .legende{display:none}
+  .page{position:fixed;padding:calc(var(--haut-h,116px) + 16px) 14px 40px}
+  .deux,.kanban{grid-template-columns:1fr}
+  .maplibregl-popup-content{width:240px}
+}
+/* Écran moyen (tablette, petite fenêtre) : les périodes tiennent sur la même ligne, centrées entre le logo et le menu ☰.
+   En descendant, le logo et le ☰ s'effacent, les périodes restent en haut en transparent. */
+@media (min-width:700px) and (max-width:1000px){
+  .haut{flex-wrap:nowrap}
+  .periodes{order:2;width:auto;margin:0 auto}
+  .burger{order:3;margin-left:0}
+  body.replie .haut{transform:none}
+  .logo,.burger{transition:opacity .25s,transform .3s}
+  body.replie .logo,body.replie .burger{opacity:0;transform:translateY(-16px);pointer-events:none}
+}
+</style>
+</head>
+<body>
+<div id="globe" aria-label="Planète avec les bornes BOD"></div>
+
+<header class="haut">
+  <a class="logo verre" href="#accueil" style="text-decoration:none;color:inherit"><img src="../images/logo-bod.png" alt="bod"/><span>Tableau de bord</span></a>
+  <nav class="periodes verre" aria-label="Période" id="periodes"></nav>
+  <button class="burger verre" id="burger" aria-label="Ouvrir le menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button>
+</header>
+
+<div class="voile" id="voile"></div>
+<nav class="tiroir" id="tiroir" aria-label="Pages du tableau de bord"></nav>
+
+<main id="accueil-vue">
+  <aside class="gauche">
+    <section class="bloc verre">
+      <div class="etiq" id="t-ca">Chiffre d'affaires</div>
+      <div class="gros num" id="ca">—</div>
+      <div class="ecart" id="ecart"></div>
+      <div class="barres" id="barres"></div>
+      <div class="axe" id="axe"></div>
+    </section>
+    <section class="duo">
+      <div class="verre"><div class="etiq">Bornes installées</div><b class="num" id="n-bornes">—</b><div class="sous" id="s-bornes"></div></div>
+      <div class="verre"><div class="etiq">Locations</div><b class="num" id="n-loc">—</b><div class="sous" id="s-loc"></div></div>
+    </section>
+    <section class="bloc verre">
+      <div class="etiq" id="t-alertes">Alertes</div>
+      <div id="alertes" style="margin-top:4px"></div>
+      <a class="lien" href="#alertes">Voir toutes les alertes →</a>
+    </section>
+  </aside>
+  <aside class="droite verre" id="droite"></aside>
+  <div class="legende verre">
+    <span><i style="background:var(--lime)"></i>En marche</span>
+    <span><i style="background:var(--orange)"></i>Batterie non rendue +24 h</span>
+    <span><i style="background:var(--rouge)"></i>Éteinte / en panne</span>
+    <span><i style="background:rgba(27,28,28,.38)"></i>Prospect</span>
+  </div>
+</main>
+
+<section class="page" id="page"><div class="cadre" id="page-cadre"></div></section>
+
+<script>
+/* ===================== DONNÉES D'EXEMPLE (DÉMO) =====================
+   Tout ce bloc sera remplacé par les vraies données :
+   bornes → Airtable (onglet « Bornes ») · encaissements → Stripe · état, batteries → plateforme du fabricant. */
+let graine = 11; const hasard = () => (graine = (graine * 16807) % 2147483647) / 2147483647;
+const MAINTENANT = new Date(); const AUJ = new Date(MAINTENANT); AUJ.setHours(0, 0, 0, 0);
+const H = 36e5, J = 864e5;
+// Profil d'une journée type (0 h → 23 h) selon le type de lieu, et jours de la semaine (dim → sam)
+const PROFILS = {
+  'Bar':               { h: [3,2,1,0,0,0,0,0,0,0,0,1,1,1,1,1,2,4,6,8,9,9,8,6], s: [0.8,0.5,0.6,0.7,0.9,1.4,1.5] },
+  'Restaurant':        { h: [0,0,0,0,0,0,0,0,0,0,1,3,7,6,2,1,1,1,3,7,8,6,3,1], s: [0.9,0.6,0.8,0.8,0.9,1.3,1.4] },
+  'Hôtel':             { h: [1,0,0,0,0,0,2,5,6,4,2,1,1,1,1,2,3,4,5,6,6,5,3,2], s: [1.1,0.9,0.9,0.9,1,1.2,1.3] },
+  'Salle de sport':    { h: [0,0,0,0,0,0,3,6,5,2,1,2,4,3,1,1,2,4,7,8,6,3,1,0], s: [0.6,1.3,1.2,1.2,1.1,1,0.8] },
+  'Centre commercial': { h: [0,0,0,0,0,0,0,0,0,1,3,4,5,4,4,5,7,8,7,5,2,0,0,0], s: [0.5,0.8,0.8,1,0.9,1.1,1.6] },
+  'Gare':              { h: [0,0,0,0,0,1,4,8,7,3,2,2,3,2,2,3,5,8,8,5,3,2,1,0], s: [1.1,1.2,1,1,1,1.3,0.9] },
+  'Événementiel':      { h: [0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,3,4,6,8,9,8,6,3], s: [0.9,0.3,0.3,0.4,0.6,1.5,1.8] },
+};
+const BORNES = [
+  { id: 1, nom: 'Le Comptoir', type: 'Bar', ville: 'Nîmes', adresse: '12 boulevard Victor Hugo', lng: 4.3601, lat: 43.8367, modele: 'Basic', slots: 6, pose: 210, flux: 9, gerant: 'Marc D.', tel: '06 •• •• •• 12' },
+  { id: 2, nom: 'Hôtel des Arènes', type: 'Hôtel', ville: 'Nîmes', adresse: '4 rue des Arènes', lng: 4.3592, lat: 43.8331, modele: 'Medium', slots: 12, pose: 190, flux: 7, gerant: 'Sophie L.', tel: '06 •• •• •• 47' },
+  { id: 3, nom: 'Fitness Maison Carrée', type: 'Salle de sport', ville: 'Nîmes', adresse: '8 rue Auguste', lng: 4.3562, lat: 43.8384, modele: 'Basic', slots: 6, pose: 150, flux: 5, gerant: 'Karim B.', tel: '07 •• •• •• 03', presqueVide: true },
+  { id: 4, nom: 'La Pause Comédie', type: 'Bar', ville: 'Montpellier', adresse: 'Place de la Comédie', lng: 3.8798, lat: 43.6086, modele: 'Medium', slots: 12, pose: 175, flux: 14, gerant: 'Julie R.', tel: '06 •• •• •• 88', retards: [{ n: 'B-0412', h: 52 }, { n: 'B-0397', h: 27 }] },
+  { id: 5, nom: 'Centre Polygone', type: 'Centre commercial', ville: 'Montpellier', adresse: '1 rue des Pertuisanes', lng: 3.8846, lat: 43.6085, modele: 'Maxi', slots: 24, pose: 120, flux: 22, gerant: 'Accueil Polygone', tel: '04 •• •• •• 20', pleine: true },
+  { id: 6, nom: 'Le Petit Palais', type: 'Restaurant', ville: 'Avignon', adresse: '3 place du Palais', lng: 4.8075, lat: 43.9512, modele: 'Basic', slots: 6, pose: 100, flux: 8, gerant: 'Thomas P.', tel: '06 •• •• •• 61' },
+  { id: 7, nom: 'Gare Saint-Charles', type: 'Gare', ville: 'Marseille', adresse: 'Square Narvik', lng: 5.3803, lat: 43.3027, modele: 'Maxi', slots: 24, pose: 80, flux: 26, gerant: 'Relais Gare', tel: '04 •• •• •• 35', eteinte: 3 },
+  { id: 8, nom: 'Les Voûtes', type: 'Bar', ville: 'Arles', adresse: '6 rue de la Calade', lng: 4.6277, lat: 43.6766, modele: 'Basic', slots: 6, pose: 60, flux: 6, gerant: 'Léa M.', tel: '06 •• •• •• 09', retards: [{ n: 'B-0218', h: 31 }] },
+  { id: 9, nom: 'Le Quai', type: 'Restaurant', ville: 'Sète', adresse: 'Quai Général Durand', lng: 3.6973, lat: 43.4028, modele: 'Basic', slots: 6, pose: 45, flux: 7, gerant: 'Nicolas F.', tel: '06 •• •• •• 74' },
+  { id: 10, nom: 'Salle Pasteur', type: 'Événementiel', ville: 'Alès', adresse: '2 avenue Pasteur', lng: 4.0817, lat: 44.1245, modele: 'Medium', slots: 12, pose: 25, flux: 6, gerant: 'Mairie (service culture)', tel: '04 •• •• •• 51' },
+];
+const PROSPECTS = [ // demandes « 🆕 Nouveau » dans Airtable (positions approximatives)
+  { nom: 'Villefranche-sur-Saône', lng: 4.7186, lat: 45.9897 }, { nom: 'Bourges', lng: 2.3988, lat: 47.081 },
+  { nom: 'Caudebec-lès-Elbeuf', lng: 1.0216, lat: 49.2819 }, { nom: 'Paris', lng: 2.3522, lat: 48.8566 },
+  { nom: 'Blois', lng: 1.3359, lat: 47.5861 }, { nom: 'Draguignan', lng: 6.4646, lat: 43.5366 },
+];
+const PIPE = [ // onglet Partenaires d'Airtable (DÉMO : villes et types seulement)
+  { e: 'Nouveau', type: 'Autre', ville: 'Villefranche-sur-Saône', date: '11/07' }, { e: 'Nouveau', type: 'Autre', ville: 'Draguignan', date: '04/10' },
+  { e: 'Contacté', type: 'Bar / Restaurant', ville: 'Bourges', date: '31/07' }, { e: 'Contacté', type: 'Hôtel', ville: 'Blois', date: '27/09' },
+  { e: 'RDV', type: 'Bar / Restaurant', ville: 'Paris', date: '08/09' }, { e: 'Signé', type: 'Autre', ville: 'Caudebec-lès-Elbeuf', date: '05/09' },
+];
+const PRIX = { Basic: 450, Medium: 900, Maxi: 1600 }; // DÉMO : à remplacer par les vrais prix d'achat (jamais montrés aux partenaires)
+// Locations heure par heure depuis la pose (1 € la demi-heure entamée, durée moyenne ~ 1 h 10)
+BORNES.forEach(b => {
+  const P = PROFILS[b.type], somH = P.h.reduce((x, y) => x + y);
+  b.loc = []; // { t, n, eur }
+  for (let d = b.pose; d >= 0; d--) {
+    const jour0 = AUJ.getTime() - d * J, wd = new Date(jour0).getDay();
+    const montee = Math.min(1, (b.pose - d + 8) / 45);
+    for (let h = 0; h < 24; h++) {
+      const t = jour0 + h * H; if (t > MAINTENANT.getTime()) break;
+      if (b.eteinte && t > MAINTENANT.getTime() - b.eteinte * H) continue;
+      const attendu = b.flux * P.s[wd] * montee * P.h[h] / somH;
+      let n = 0; for (let k = 0; k < 4; k++) if (hasard() < attendu / 4) n++;
+      if (n) { let e = 0; for (let k = 0; k < n; k++) e += 1 + Math.floor(hasard() * 3.4); b.loc.push({ t, n, eur: e }); }
+    }
+  }
+  b.etat = b.eteinte ? 'hors' : (b.retards && b.retards.length) ? 'retard' : 'ok';
+  b.enCours = b.eteinte ? 0 : Math.round(b.slots * (0.15 + hasard() * 0.3));
+  b.retardN = b.retards ? b.retards.length : 0;
+  b.dispo = b.eteinte ? 0 : b.presqueVide ? 1 : b.pleine ? b.slots : Math.max(1, b.slots - b.enCours - b.retardN - Math.round(hasard() * 2));
+  const der = b.loc.length ? b.loc[b.loc.length - 1].t : 0;
+  b.derniere = Math.max(1, Math.round((MAINTENANT.getTime() - der) / 6e4));
+});
+
+/* ===================== CALCULS ===================== */
+const eur = n => Math.round(n).toLocaleString('fr-FR') + ' €';
+const nb = n => n.toLocaleString('fr-FR');
+const COUL = { ok: 'var(--lime)', retard: 'var(--orange)', hors: 'var(--rouge)' };
+const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const JOURS = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+const duree = min => min < 60 ? min + ' min' : min < 1440 ? Math.floor(min / 60) + ' h' + (min % 60 ? ' ' + String(min % 60).padStart(2, '0') : '') : Math.floor(min / 1440) + ' j';
+// Périodes « calendrier » : aujourd'hui, depuis lundi, depuis le 1er du mois, depuis le 1er janvier, depuis le début
+function debut(p) {
+  const d = new Date(AUJ);
+  if (p === 'semaine') d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  if (p === 'mois') d.setDate(1);
+  if (p === 'annee') { d.setMonth(0); d.setDate(1); }
+  if (p === 'tout') return 0;
+  return d.getTime();
+}
+function precedent(p) { // même durée écoulée, période d'avant
+  const a = debut(p), ecoule = MAINTENANT.getTime() - a, d = new Date(a);
+  if (p === 'jour') d.setDate(d.getDate() - 7);          // même jour, semaine dernière
+  if (p === 'semaine') d.setDate(d.getDate() - 7);
+  if (p === 'mois') d.setMonth(d.getMonth() - 1);
+  if (p === 'annee') d.setFullYear(d.getFullYear() - 1);
+  return [d.getTime(), d.getTime() + ecoule];
+}
+const somme = (liste, a, z, c = 'eur') => liste.reduce((s, b) => s + b.loc.reduce((x, l) => x + (l.t >= a && l.t < z ? l[c] : 0), 0), 0);
+const PER = [
+  { k: 'jour', l: "Aujourd'hui", cmp: 'vs même jour sem. dern.' },
+  { k: 'semaine', l: 'Cette semaine', cmp: 'vs sem. dernière' },
+  { k: 'mois', l: 'Ce mois', cmp: 'vs mois dernier' },
+  { k: 'annee', l: 'Cette année', cmp: 'vs an dernier' },
+  { k: 'tout', l: 'Toutes les années', cmp: '' },
+];
+function serie(p, liste) {
+  const out = [], fin = MAINTENANT.getTime();
+  if (p === 'jour') for (let h = 0; h < 24; h += 1) { const a = AUJ.getTime() + h * H; out.push({ v: somme(liste, a, a + H), l: h + 'h' }); }
+  else if (p === 'semaine' || p === 'mois') { const a0 = debut(p), n = p === 'semaine' ? 7 : new Date(AUJ.getFullYear(), AUJ.getMonth() + 1, 0).getDate(); for (let i = 0; i < n; i++) { const a = a0 + i * J; out.push({ v: a > fin ? 0 : somme(liste, a, a + J), l: p === 'semaine' ? JOURS[new Date(a).getDay()] : (i + 1) + '' }); } }
+  else { const d0 = p === 'annee' ? new Date(AUJ.getFullYear(), 0, 1) : new Date(Math.min(...liste.map(b => b.loc.length ? b.loc[0].t : fin))); d0.setDate(1);
+    for (let d = new Date(d0); d <= MAINTENANT && out.length < 36; d.setMonth(d.getMonth() + 1)) { const e = new Date(d.getFullYear(), d.getMonth() + 1, 1); out.push({ v: somme(liste, d.getTime(), e.getTime()), l: MOIS[d.getMonth()] }); } }
+  return out;
+}
+function chaleur(b) { // locations par jour de la semaine × heure, sur les 8 dernières semaines
+  const m = Array.from({ length: 7 }, () => Array(24).fill(0)), a = MAINTENANT.getTime() - 56 * J;
+  b.loc.forEach(l => { if (l.t >= a) { const d = new Date(l.t); m[(d.getDay() + 6) % 7][d.getHours()] += l.n; } });
+  return m;
+}
+/* ===================== OUTILS D'AFFICHAGE ===================== */
+const PER_COURT = { jour: "Aujourd'hui", semaine: 'Cette semaine', mois: 'Ce mois', annee: 'Cette année', tout: 'Toutes les années' };
+const FIN = () => MAINTENANT.getTime() + 1;
+const etatTexte = b => b.etat === 'hors' ? 'Éteinte depuis ' + b.eteinte + ' h' : b.etat === 'retard' ? b.retardN + ' batterie(s) non rendue(s) +24 h' : 'En marche · dernière location il y a ' + duree(b.derniere);
+const pastilleEtat = b => '<span class="etat"><i style="background:' + COUL[b.etat] + '"></i>' + etatTexte(b) + '</span>';
+function variation(liste, p) {
+  if (p === 'tout') return '<small>' + Math.max(...BORNES.map(b => b.pose)) + " jours d'activité</small>";
+  const v = somme(liste, debut(p), FIN()), [pa, pz] = precedent(p), av = somme(liste, pa, pz);
+  if (!av) return '<small>pas encore de comparaison possible</small>';
+  const pc = Math.round((v - av) / av * 100);
+  return '<span class="' + (pc >= 0 ? 'plus' : 'moins') + '">' + (pc >= 0 ? '↑ +' : '↓ ') + pc + ' %</span> <small>' + PER.find(x => x.k === p).cmp + '</small>';
+}
+function graphe(liste, p, idB, idA) {
+  const s = serie(p, liste), max = Math.max(1, ...s.map(x => x.v)), dern = s.findLastIndex(y => y.v);
+  document.getElementById(idB).innerHTML = s.map((x, i) => '<i class="' + (i === dern ? 'der' : '') + '" style="height:' + Math.max(3, x.v / max * 100) + '%" title="' + x.l + ' : ' + eur(x.v) + '"></i>').join('');
+  document.getElementById(idA).innerHTML = '<span>' + s[0].l + '</span><span>' + s[Math.floor(s.length / 2)].l + '</span><span>' + s[s.length - 1].l + '</span>';
+}
+function alertes() { // éteintes, puis batteries non rendues sous 24 h, puis bornes pleines / presque vides
+  const A = [];
+  BORNES.forEach(b => { if (b.eteinte) A.push({ o: 0, b, c: 'var(--rouge)', t: 'Borne éteinte depuis ' + b.eteinte + ' h', s: b.nom + ' · ' + b.ville, a: 'Appeler ' + b.gerant + ' pour vérifier la prise, sinon passer sur place.' }); });
+  BORNES.forEach(b => (b.retards || []).forEach(r => A.push({ o: 1, b, c: 'var(--orange)', t: 'Batterie ' + r.n + ' non rendue depuis ' + r.h + ' h', s: b.nom + ' · ' + b.ville + ' · caution de 30 € ' + (r.h >= 48 ? 'encaissée' : 'bloquée'), a: r.h >= 48 ? 'Caution encaissée : prévoir une batterie de remplacement.' : 'Encaissement automatique de la caution à 48 h si elle n\'est pas rendue.' })));
+  BORNES.forEach(b => { if (b.pleine) A.push({ o: 2, b, c: 'var(--bleu)', t: 'Borne pleine : ' + b.slots + ' / ' + b.slots, s: b.nom + ' · ' + b.ville, a: 'Les clients ne peuvent plus rendre ici : retirer quelques batteries.' }); if (b.presqueVide) A.push({ o: 2, b, c: 'var(--bleu)', t: 'Presque vide : ' + b.dispo + ' batterie sur ' + b.slots, s: b.nom + ' · ' + b.ville, a: 'À réapprovisionner avec des batteries chargées.' }); });
+  return A.sort((x, y) => x.o - y.o);
+}
+const ligneAlerte = x => '<button class="alerte" data-b="' + x.b.id + '"><i class="pt" style="background:' + x.c + '"></i><div><b>' + x.t + '</b><span>' + x.s + '</span></div></button>';
+function chaud(x) { // 0 → gris clair, 0,55 → jaune BOD, 1 → vert olive
+  const A = [236, 234, 229], B = [208, 255, 0], C = [122, 158, 0], m = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
+  const c = x < 0.55 ? m(A, B, x / 0.55) : m(B, C, (x - 0.55) / 0.45); return 'rgb(' + c.join(',') + ')';
+}
+function chaleurHTML(m) {
+  const mx = Math.max(1, ...m.flat()), JL = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'], JLong = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+  return '<div class="chaleur">' + m.map((row, d) => '<span>' + JL[d] + '</span>' + row.map((v, h) => '<i title="' + JLong[d] + ' ' + h + 'h–' + (h + 1) + 'h : ' + v + ' locations" style="background:' + (v ? chaud(v / mx) : 'rgba(27,28,28,.05)') + '"></i>').join('')).join('') +
+    '<span></span>' + Array.from({ length: 24 }, (_, h) => '<span class="h">' + (h % 3 === 0 ? h + 'h' : '') + '</span>').join('') + '</div>';
+}
+function resumeHoraires(m) {
+  const JLong = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+  let best = { v: -1 }; m.forEach((row, d) => row.forEach((v, h) => { const v2 = v + (row[h + 1] || 0); if (v2 > best.v) best = { v: v2, d, h }; }));
+  const parH = Array(24).fill(0); m.forEach(r => r.forEach((v, h) => parH[h] += v));
+  const parJ = m.map(r => r.reduce((x, y) => x + y)), hMax = parH.indexOf(Math.max(...parH));
+  return { best: JLong[best.d] + ' ' + best.h + 'h–' + (best.h + 2) + 'h', heure: hMax + 'h–' + (hMax + 1) + 'h', jour: JLong[parJ.indexOf(Math.max(...parJ))], calme: JLong[parJ.indexOf(Math.min(...parJ))] };
+}
+function chaleurTous(liste) { const m = Array.from({ length: 7 }, () => Array(24).fill(0)); liste.forEach(b => chaleur(b).forEach((r, d) => r.forEach((v, h) => m[d][h] += v))); return m; }
+function slotsHTML(b) {
+  const s = []; for (let i = 0; i < b.slots; i++) s.push(i < b.dispo ? 'on' : '');
+  let r = b.retardN; if (!b.eteinte) for (let i = b.slots - 1; i >= b.dispo; i--) { s[i] = r > 0 ? 'retard' : 'loc'; r--; }
+  return '<div class="slots">' + s.map(c => '<i class="' + c + '"></i>').join('') + '</div><div class="cles"><span><i style="background:var(--lime)"></i>dans la borne</span><span><i style="border:1.5px solid rgba(27,28,28,.35)"></i>louée</span><span><i style="background:var(--orange)"></i>non rendue +24 h</span></div>' +
+    (b.retards ? '<div class="retards">' + b.retards.map(x => '<div><span>Batterie <b>' + x.n + '</b></span><span>sortie il y a <b>' + x.h + ' h</b> · caution ' + (x.h >= 48 ? 'encaissée' : 'bloquée') + '</span></div>').join('') + '</div>' : '');
+}
+const brancher = sel => document.querySelectorAll(sel).forEach(el => el.onclick = () => { location.hash = 'borne-' + el.dataset.b; });
+
+/* ===================== MENU DU HAUT : PÉRIODES ===================== */
+let periode = 'mois';
+function rendrePeriodes() {
+  document.getElementById('periodes').innerHTML = PER.map(p => '<button data-p="' + p.k + '" aria-pressed="' + (p.k === periode) + '">' + PER_COURT[p.k] + '</button>').join('');
+  document.querySelectorAll('#periodes button').forEach(b => b.onclick = () => { periode = b.dataset.p; rendrePeriodes(); router(); });
+}
+
+/* ===================== MENU ☰ : AUTRES PAGES ===================== */
+const PAGES = [
+  { k: 'accueil', t: "Vue d'ensemble", i: '◎' },
+  { k: 'bornes', t: 'Bornes', i: '▣', n: () => BORNES.length },
+  { k: 'alertes', t: 'Alertes', i: '!', n: () => alertes().length, chaud: true },
+  { k: 'horaires', t: 'Horaires', i: '◷' },
+  { k: 'rentabilite', t: 'Rentabilité', i: '€' },
+  { k: 'batteries', t: 'Batteries & cautions', i: '▮' },
+  { k: 'prospects', t: 'Prospects', i: '✦', n: () => PIPE.length },
+];
+function rendreTiroir(actif) {
+  document.getElementById('tiroir').innerHTML = '<div class="etiq">Tableau de bord</div>' + PAGES.map(p => '<a href="#' + p.k + '" class="' + (p.k === actif ? 'actif' : '') + '"><span class="ico">' + p.i + '</span>' + p.t + (p.n ? '<small class="' + (p.chaud && p.n() ? 'chaud' : '') + '">' + p.n() + '</small>' : '') + '</a>').join('');
+}
+const tiroir = on => { document.getElementById('tiroir').classList.toggle('on', on); document.getElementById('voile').classList.toggle('on', on); };
+document.getElementById('burger').onclick = () => tiroir(true);
+document.getElementById('voile').onclick = () => tiroir(false);
+
+/* ===================== ACCUEIL ===================== */
+function rendreAccueil() {
+  const fin = FIN();
+  document.getElementById('t-ca').textContent = "Chiffre d'affaires · " + PER_COURT[periode];
+  document.getElementById('ca').textContent = eur(somme(BORNES, debut(periode), fin));
+  document.getElementById('ecart').innerHTML = variation(BORNES, periode);
+  graphe(BORNES, periode, 'barres', 'axe');
+  const n = e => BORNES.filter(b => b.etat === e).length;
+  document.getElementById('n-bornes').textContent = BORNES.length;
+  document.getElementById('s-bornes').innerHTML = '<span class="pastille"><i style="background:var(--lime)"></i>' + n('ok') + ' en marche</span><br><span class="pastille"><i style="background:var(--orange)"></i>' + n('retard') + ' batterie(s) en retard</span><br><span class="pastille"><i style="background:var(--rouge)"></i>' + n('hors') + ' éteinte(s)</span>';
+  document.getElementById('n-loc').textContent = nb(somme(BORNES, debut(periode), fin, 'n'));
+  document.getElementById('s-loc').innerHTML = PER_COURT[periode] + '<br><b style="display:inline;font-size:12px;color:var(--vert)">' + BORNES.reduce((x, b) => x + b.enCours, 0) + '</b> louées en ce moment';
+  const A = alertes();
+  document.getElementById('t-alertes').textContent = A.length + ' alertes';
+  document.getElementById('alertes').innerHTML = A.slice(0, 4).map(ligneAlerte).join('');
+  brancher('#alertes .alerte');
+  const tri = BORNES.map(b => ({ b, v: somme([b], debut(periode), fin), n: somme([b], debut(periode), fin, 'n') })).sort((x, y) => y.v - x.v);
+  document.getElementById('droite').innerHTML = '<div class="tete"><div class="etiq">Classement des bornes</div><div class="etiq">' + PER_COURT[periode] + '</div></div><div class="liste">' +
+    tri.map(({ b, v, n }) => '<button class="ligne" data-b="' + b.id + '"><i class="pt" style="background:' + COUL[b.etat] + '"></i><span class="nom"><b>' + b.nom + '</b><span>' + b.type + ' · ' + b.ville + '</span></span><span class="eur num">' + eur(v) + '<small>' + nb(n) + ' locations</small></span></button>').join('') + '</div>';
+  document.querySelectorAll('#droite .ligne').forEach(el => el.onclick = () => montrer(+el.dataset.b));
+}
+
+/* ===================== PAGES ===================== */
+const entete = (titre, chapo) => '<button class="retourp" onclick="location.hash=\'accueil\'">← Vue d\'ensemble</button><h1>' + titre + '</h1><p class="chapo">' + chapo + '</p>';
+const RENDUS = {
+  bornes() {
+    const fin = FIN();
+    let filtre = window._filtreBornes || 'toutes';
+    const L = BORNES.filter(b => filtre === 'toutes' || b.etat === filtre).map(b => ({ b, v: somme([b], debut(periode), fin), n: somme([b], debut(periode), fin, 'n') })).sort((x, y) => y.v - x.v);
+    const F = [['toutes', 'Toutes (' + BORNES.length + ')'], ['ok', 'En marche'], ['retard', 'Batterie en retard'], ['hors', 'Éteintes']];
+    return entete('Bornes', BORNES.length + ' bornes installées · chiffres : ' + PER_COURT[periode].toLowerCase() + '. Cliquez sur une borne pour tout voir.') +
+      '<div class="filtres">' + F.map(f => '<button data-f="' + f[0] + '" aria-pressed="' + (f[0] === filtre) + '">' + f[1] + '</button>').join('') + '</div>' +
+      '<div class="tablo"><table><thead><tr><th>État</th><th>Borne</th><th>Ville</th><th>Type</th><th>Modèle</th><th class="d">CA</th><th class="d">Locations</th><th class="d">Batteries</th><th class="d">Dernière location</th></tr></thead><tbody>' +
+      L.map(({ b, v, n }) => '<tr data-b="' + b.id + '"><td><span class="pastille"><i style="background:' + COUL[b.etat] + ';width:9px;height:9px"></i></span></td><td><b>' + b.nom + '</b></td><td>' + b.ville + '</td><td>' + b.type + '</td><td>' + b.modele + ' · ' + b.slots + '</td><td class="d num"><b>' + eur(v) + '</b></td><td class="d num">' + nb(n) + '</td><td class="d num">' + b.dispo + ' / ' + b.slots + '</td><td class="d">' + (b.eteinte ? '—' : 'il y a ' + duree(b.derniere)) + '</td></tr>').join('') + '</tbody></table></div>';
+  },
+  alertes() {
+    const A = alertes(), g = [[0, 'Bornes éteintes ou en panne'], [1, 'Batteries non rendues depuis plus de 24 h'], [2, 'Bornes pleines ou presque vides']];
+    return entete('Alertes', A.length + ' alertes en cours. Cliquez sur une alerte pour ouvrir la borne.') +
+      g.map(([o, t]) => { const L = A.filter(x => x.o === o); return L.length ? '<div class="carte" style="margin-bottom:12px"><div class="etiq">' + t + ' · ' + L.length + '</div>' + L.map(x => ligneAlerte(x).replace('</span></div></button>', '</span><span style="display:block;color:var(--texte);margin-top:4px">→ ' + x.a + '</span></div></button>')).join('') + '</div>' : ''; }).join('');
+  },
+  horaires() {
+    const m = chaleurTous(BORNES), r = resumeHoraires(m), types = [...new Set(BORNES.map(b => b.type))];
+    return entete('Horaires', 'Quand vos bornes sont-elles le plus louées ? Toutes bornes confondues, sur les 8 dernières semaines.') +
+      '<div class="cartes"><div class="carte"><div class="etiq">Créneau le plus loué</div><b class="v">' + r.best + '</b></div><div class="carte"><div class="etiq">Heure la plus forte</div><b class="v">' + r.heure + '</b></div><div class="carte"><div class="etiq">Meilleur jour</div><b class="v">' + r.jour + '</b></div><div class="carte"><div class="etiq">Jour le plus calme</div><b class="v">' + r.calme + '</b></div></div>' +
+      '<div class="carte"><div class="etiq">Locations par jour et par heure</div>' + chaleurHTML(m) + '<p class="meilleur">Plus la case est verte, plus on loue. Utile pour savoir <b>quand passer réapprovisionner</b> (aux heures creuses) et <b>quand l\'écran publicitaire est le plus regardé</b>.</p></div>' +
+      '<div class="cartes" style="margin-top:16px">' + types.map(t => { const rr = resumeHoraires(chaleurTous(BORNES.filter(b => b.type === t))); return '<div class="carte"><div class="etiq">' + t + '</div><b class="v" style="font-size:18px">' + rr.best + '</b><div class="sous">meilleur jour : ' + rr.jour + '</div></div>'; }).join('') + '</div>';
+  },
+  rentabilite() {
+    const L = BORNES.map(b => { const tot = somme([b], 0, FIN()), prix = PRIX[b.modele], pj = somme([b], MAINTENANT.getTime() - 30 * J, FIN()) / 30; return { b, tot, prix, pc: Math.min(100, tot / prix * 100), jr: tot >= prix ? 0 : Math.ceil((prix - tot) / Math.max(pj, 0.1)) }; }).sort((x, y) => y.pc - x.pc);
+    const inv = L.reduce((x, y) => x + y.prix, 0), rec = L.reduce((x, y) => x + y.tot, 0);
+    return entete('Rentabilité', 'Combien chaque borne a déjà rapporté par rapport à son prix d\'achat. Prix d\'achat : valeurs DÉMO, à remplacer par les vrais (jamais montrés aux partenaires).') +
+      '<div class="cartes"><div class="carte"><div class="etiq">Investi en bornes</div><b class="v">' + eur(inv) + '</b></div><div class="carte"><div class="etiq">Encaissé au total</div><b class="v">' + eur(rec) + '</b></div><div class="carte"><div class="etiq">Bornes remboursées</div><b class="v">' + L.filter(x => !x.jr).length + ' / ' + L.length + '</b></div></div>' +
+      '<div class="tablo"><table><thead><tr><th>Borne</th><th>Modèle</th><th class="d">Prix</th><th class="d">Encaissé</th><th>Remboursement</th><th class="d">Reste</th></tr></thead><tbody>' +
+      L.map(x => '<tr data-b="' + x.b.id + '"><td><b>' + x.b.nom + '</b><br><span style="color:var(--doux);font-size:12px">' + x.b.ville + '</span></td><td>' + x.b.modele + '</td><td class="d num">' + eur(x.prix) + '</td><td class="d num">' + eur(x.tot) + '</td><td><div class="jauge"><i style="width:' + x.pc + '%"></i></div></td><td class="d">' + (x.jr ? '~' + x.jr + ' jours' : '<span class="plus">Remboursée ✓</span>') + '</td></tr>').join('') + '</tbody></table></div>';
+  },
+  batteries() {
+    const ret = BORNES.flatMap(b => (b.retards || []).map(r => ({ b, r }))), slots = BORNES.reduce((x, b) => x + b.slots, 0);
+    const dispo = BORNES.reduce((x, b) => x + b.dispo, 0), loc = BORNES.reduce((x, b) => x + b.enCours, 0);
+    return entete('Batteries & cautions', 'Où sont vos batteries en ce moment, et les cautions de 30 € liées aux batteries non rendues.') +
+      '<div class="cartes"><div class="carte"><div class="etiq">Emplacements</div><b class="v">' + slots + '</b></div><div class="carte"><div class="etiq">Dans les bornes</div><b class="v">' + dispo + '</b></div><div class="carte"><div class="etiq">Louées en ce moment</div><b class="v">' + loc + '</b></div><div class="carte"><div class="etiq">Non rendues +24 h</div><b class="v" style="color:var(--orange)">' + ret.length + '</b></div>' +
+      '<div class="carte"><div class="etiq">Cautions bloquées</div><b class="v">' + eur(ret.filter(x => x.r.h < 48).length * 30) + '</b></div><div class="carte"><div class="etiq">Cautions encaissées</div><b class="v">' + eur(ret.filter(x => x.r.h >= 48).length * 30) + '</b><div class="sous">batteries perdues à remplacer : ' + ret.filter(x => x.r.h >= 48).length + '</div></div></div>' +
+      '<div class="tablo"><table><thead><tr><th>Batterie</th><th>Louée à</th><th class="d">Sortie depuis</th><th>Caution</th></tr></thead><tbody>' + (ret.length ? ret.map(x => '<tr data-b="' + x.b.id + '"><td><b>' + x.r.n + '</b></td><td>' + x.b.nom + ' · ' + x.b.ville + '</td><td class="d" style="color:var(--orange)"><b>' + x.r.h + ' h</b></td><td>' + (x.r.h >= 48 ? 'encaissée (30 €)' : 'bloquée, encaissée à 48 h') + '</td></tr>').join('') : '<tr><td colspan="4">Aucune batterie en retard 🎉</td></tr>') + '</tbody></table></div>';
+  },
+  prospects() {
+    const C = [['Nouveau', '🆕 Nouveau'], ['Contacté', 'Contacté'], ['RDV', 'Rendez-vous'], ['Signé', 'Signé']];
+    return entete('Prospects', 'Vos demandes de partenariat (onglet Partenaires d\'Airtable), du premier contact à l\'installation. Données DÉMO : villes et types seulement.') +
+      '<div class="kanban">' + C.map(([k, t]) => { const L = PIPE.filter(p => p.e === k); return '<div class="col"><div class="etiq">' + t + ' · ' + L.length + '</div>' + L.map(p => '<div class="fic"><b>' + p.type + '</b><span>' + p.ville + ' · reçu le ' + p.date + '</span></div>').join('') + '</div>'; }).join('') + '</div>';
+  },
+};
+function rendreBorne(b) {
+  const fin = FIN(), m = chaleur(b), r = resumeHoraires(m), tot = somme([b], 0, fin), prix = PRIX[b.modele], pj = somme([b], MAINTENANT.getTime() - 30 * J, fin) / 30;
+  const html = '<button class="retourp" onclick="history.length>1?history.back():location.hash=\'accueil\'">← Retour</button>' +
+    '<h1>' + b.nom + '</h1><p class="chapo">' + b.type + ' · ' + b.adresse + ', ' + b.ville + ' · station ' + b.modele + ' (' + b.slots + ' emplacements) · posée il y a ' + b.pose + ' jours</p>' +
+    '<div style="margin:-8px 0 20px">' + pastilleEtat(b) + '</div>' +
+    '<div class="deux"><div>' +
+      '<div class="carte"><div class="etiq">Chiffre d\'affaires · ' + PER_COURT[periode] + '</div><b class="v num">' + eur(somme([b], debut(periode), fin)) + '</b><div class="sous">' + nb(somme([b], debut(periode), fin, 'n')) + ' locations</div><div class="ecart" style="margin-top:6px">' + variation([b], periode) + '</div><div class="barres haute" id="b-barres"></div><div class="axe" id="b-axe"></div></div>' +
+      '<div class="carte" style="margin-top:16px"><div class="etiq">Meilleurs horaires (8 dernières semaines)</div>' + chaleurHTML(m) + '<p class="meilleur">Créneau le plus loué : <b>' + r.best + '</b> · heure la plus forte : <b>' + r.heure + '</b><br>Meilleur jour : <b>' + r.jour + '</b> · jour le plus calme : <b>' + r.calme + '</b></p></div>' +
+    '</div><div>' +
+      '<div class="carte"><div class="etiq">Batteries : ' + b.dispo + ' dans la borne sur ' + b.slots + ' · ' + b.enCours + ' louées</div>' + slotsHTML(b) + '</div>' +
+      '<div class="carte" style="margin-top:16px"><div class="etiq">Rentabilité</div><div class="jauge" style="margin-top:12px"><i style="width:' + Math.min(100, tot / prix * 100) + '%"></i></div><p class="meilleur">' + (tot >= prix ? '<b>Remboursée ✓</b> — tout ce qu\'elle encaisse maintenant est du bénéfice.' : '<b>' + eur(tot) + '</b> récupérés sur ' + eur(prix) + ' (prix démo). Remboursée dans <b>~' + Math.ceil((prix - tot) / Math.max(pj, 0.1)) + ' jours</b> au rythme actuel.') + '</p></div>' +
+      '<div class="carte" style="margin-top:16px"><div class="etiq">Contact sur place</div><p class="meilleur"><b>' + b.gerant + '</b><br>' + b.tel + '</p></div>' +
+      '<div class="carte histo" style="margin-top:16px"><div class="etiq" style="margin-bottom:6px">Historique (DÉMO)</div>' +
+        (b.eteinte ? '<div><b style="color:var(--rouge)">Borne éteinte</b><span>il y a ' + b.eteinte + ' h</span></div>' : '') +
+        '<div><b>Réapprovisionnement</b><span>il y a 6 j</span></div><div><b>Maintenance préventive</b><span>il y a 34 j</span></div><div><b>Installation</b><span>il y a ' + b.pose + ' j</span></div></div>' +
+    '</div></div>';
+  return html;
+}
+
+/* ===================== NAVIGATION (#accueil, #bornes, #borne-4…) ===================== */
+function router() {
+  const h = (location.hash || '#accueil').slice(1), page = document.getElementById('page'), cadre = document.getElementById('page-cadre');
+  tiroir(false); rendreTiroir(h.startsWith('borne-') ? 'bornes' : h);
+  if (h === 'accueil' || (!RENDUS[h] && !h.startsWith('borne-'))) { page.classList.remove('on'); rendreAccueil(); return; }
+  if (h.startsWith('borne-')) { const b = BORNES.find(x => x.id === +h.slice(6)); if (!b) { location.hash = 'accueil'; return; } cadre.innerHTML = rendreBorne(b); graphe([b], periode, 'b-barres', 'b-axe'); }
+  else {
+    cadre.innerHTML = RENDUS[h]();
+    document.querySelectorAll('.filtres button').forEach(x => x.onclick = () => { window._filtreBornes = x.dataset.f; router(); });
+  }
+  brancher('#page tr[data-b], #page .alerte');
+  page.classList.add('on'); page.scrollTop = 0;
+}
+window.addEventListener('hashchange', router);
+
+/* ===================== PLANÈTE ===================== */
+let carte = null, tourne = true, bulle = null, choisie = null;
+const marges = () => window.innerWidth > 1000 ? { left: 380, right: 370, top: 70, bottom: 0 } : { left: 0, right: 0, top: 90, bottom: 0 };
+function marquer() { document.querySelectorAll('.pin').forEach(p => p.classList.toggle('sel', !!choisie && +p.dataset.b === choisie.id)); }
+// 1er clic : petit résumé sur la carte · 2e clic (ou bouton) : page complète de la borne
+function montrer(id) {
+  const b = BORNES.find(x => x.id === id);
+  if (choisie && choisie.id === id && bulle && bulle.isOpen()) { location.hash = 'borne-' + id; return; }
+  choisie = b; marquer();
+  if (!carte) { location.hash = 'borne-' + id; return; }
+  tourne = false;
+  const fin = FIN(), r = resumeHoraires(chaleur(b));
+  const html = '<div class="bulle"><h3>' + b.nom + '</h3><div class="s">' + b.type + ' · ' + b.ville + ' · ' + b.modele + '</div><div class="etat">' + '<i style="background:' + COUL[b.etat] + '"></i>' + etatTexte(b) + '</div>' +
+    '<div class="kpi"><div><b class="num">' + eur(somme([b], debut(periode), fin)) + '</b><span>' + PER_COURT[periode].toLowerCase() + '</span></div><div><b class="num">' + nb(somme([b], debut(periode), fin, 'n')) + '</b><span>locations</span></div><div><b>' + b.dispo + '/' + b.slots + '</b><span>batteries</span></div></div>' +
+    '<p>Meilleur créneau : <b>' + r.best + '</b></p><button class="ouvrir" onclick="location.hash=\'borne-' + b.id + '\'">Tout voir sur la borne →</button><span class="astuce">ou recliquez sur la borne</span></div>';
+  if (bulle) bulle.remove();
+  bulle = new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: '300px' }).setLngLat([b.lng, b.lat]).setHTML(html).addTo(carte);
+  bulle.on('close', () => { if (choisie && choisie.id === b.id) { choisie = null; marquer(); } });
+  carte.flyTo({ center: [b.lng, b.lat], zoom: Math.max(carte.getZoom(), 11), duration: 1600, padding: marges(), offset: [0, 90], essential: true });
+}
+if (window.maplibregl) {
+  carte = new maplibregl.Map({ container: 'globe', style: 'https://tiles.openfreemap.org/styles/positron', center: [-10, 30], zoom: window.innerWidth < 1000 ? 1.1 : 1.7, attributionControl: { compact: true }, maxPitch: 60 });
+  carte.on('style.load', () => {
+    carte.setProjection({ type: 'globe' });
+    try { carte.setSky({ 'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0] }); } catch (e) {}
+    const nom = ['coalesce', ['get', 'name:fr'], ['get', 'name:latin'], ['get', 'name']];
+    carte.getStyle().layers.forEach(l => {
+      try {
+        if (l.type === 'background') carte.setPaintProperty(l.id, 'background-color', '#efedea');
+        else if (l.id === 'water') carte.setPaintProperty(l.id, 'fill-color', '#dcee9c');
+        else if (l.id === 'waterway') carte.setPaintProperty(l.id, 'line-color', '#dcee9c');
+        else if (l.id === 'park' || l.id === 'landcover_wood') carte.setPaintProperty(l.id, 'fill-color', '#e6e9df');
+        else if (l.id === 'landuse_residential' || l.id === 'building') carte.setPaintProperty(l.id, 'fill-color', '#ebe9e5');
+        else if (l.type === 'raster') carte.setLayoutProperty(l.id, 'visibility', 'none');
+        else if (/shield|airport|label_other/.test(l.id)) carte.setLayoutProperty(l.id, 'visibility', 'none');
+        else if (l.type === 'symbol') {
+          carte.setLayoutProperty(l.id, 'text-field', nom);
+          const eau = /water/.test(l.id);
+          carte.setPaintProperty(l.id, 'text-color', eau ? '#6f8500' : /country|city/.test(l.id) ? '#3d3b38' : '#5e5b57');
+          carte.setPaintProperty(l.id, 'text-halo-color', eau ? 'rgba(220,238,156,.6)' : '#ffffff');
+          carte.setPaintProperty(l.id, 'text-halo-width', 1.4);
+        }
+      } catch (e) {}
+    });
+    setTimeout(() => { if (!tourne) return; tourne = false; carte.flyTo({ center: [3.4, 45.2], zoom: window.innerWidth < 1000 ? 4.4 : 5.2, duration: 4500, padding: marges(), essential: true }); }, 3200);
+  });
+  PROSPECTS.forEach(p => { const el = document.createElement('div'); el.className = 'prospect'; el.title = 'Prospect : ' + p.nom; new maplibregl.Marker({ element: el }).setLngLat([p.lng, p.lat]).addTo(carte); });
+  BORNES.forEach(b => {
+    const el = document.createElement('div'); el.className = 'pin'; el.dataset.b = b.id; el.style.background = COUL[b.etat]; el.style.color = COUL[b.etat]; el.title = b.nom + ' · ' + b.ville;
+    el.addEventListener('click', e => { e.stopPropagation(); montrer(b.id); });
+    new maplibregl.Marker({ element: el }).setLngLat([b.lng, b.lat]).addTo(carte);
+  });
+  ['mousedown', 'touchstart', 'wheel'].forEach(ev => carte.getCanvas().addEventListener(ev, () => { tourne = false; }, { passive: true }));
+  (function rotation() { if (tourne && carte.isStyleLoaded()) { const c = carte.getCenter(); c.lng += 0.08; carte.setCenter(c); } requestAnimationFrame(rotation); })();
+}
+rendrePeriodes();
+router();
+/* Pendant les essais (lien temporaire ou ordinateur de Jules) : la page se recharge toute seule dès que le fichier
+   est modifié, en gardant la page ouverte (#bornes, #borne-4…). Ne fait rien une fois publiée sur bodcharge.com. */
+if (/trycloudflare\.com$|^localhost$|^127\./.test(location.hostname)) (function () {
+  let empreinte = null;
+  const verifier = () => fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' }).then(r => r.text()).then(t => {
+    const e = t.length + ':' + t.slice(-400);
+    if (empreinte && e !== empreinte) location.reload();
+    empreinte = e;
+  }).catch(() => {});
+  verifier(); setInterval(verifier, 4000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) verifier(); });
+})();
+/* Téléphone : la ligne du logo disparaît quand on descend, revient quand on remonte */
+(function () {
+  const haut = document.querySelector('.haut'), per = document.getElementById('periodes'), page = document.getElementById('page');
+  const mesurer = () => { document.documentElement.style.setProperty('--haut-h', haut.offsetHeight + 'px'); document.documentElement.style.setProperty('--replie', (per.offsetTop - 2) + 'px'); };
+  mesurer(); window.addEventListener('resize', mesurer);
+  let dernier = 0;
+  const suivre = y => {
+    if (window.innerWidth > 1000) { document.body.classList.remove('replie'); return; }
+    if (y > dernier + 4 && y > 60) document.body.classList.add('replie');
+    else if (y < dernier - 4 || y < 20) document.body.classList.remove('replie');
+    dernier = y;
+  };
+  window.addEventListener('scroll', () => suivre(window.scrollY), { passive: true });
+  page.addEventListener('scroll', () => suivre(page.scrollTop), { passive: true });
+  window.addEventListener('hashchange', () => { dernier = 0; document.body.classList.remove('replie'); });
+})();
+</script>
+</body>
+</html>
