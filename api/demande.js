@@ -21,11 +21,14 @@ async function brouillon(d) {
   if (!BROUILLON_URL || !BROUILLON_SECRET) return;
   const donnees = { secret: BROUILLON_SECRET, formulaire: d.formulaire };
   for (const k of ['nom', 'email', 'etablissement', 'type', 'ville', 'sujet', 'message']) donnees[k] = propre(d[k]);
-  try {
-    const ctrl = new AbortController(); const minuterie = setTimeout(() => ctrl.abort(), 8000);
-    await fetch(BROUILLON_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(donnees), redirect: 'follow', signal: ctrl.signal });
-    clearTimeout(minuterie);
-  } catch (e) { console.error('Brouillon Gmail', e && e.message); }
+  // Google rate parfois une demande (page d'erreur au lieu de {"ok":true}) : on réessaie une fois.
+  for (let essai = 1; essai <= 2; essai++) {
+    try {
+      const r = await fetch(BROUILLON_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(donnees), redirect: 'follow', signal: AbortSignal.timeout(20000) });
+      if ((await r.text()).includes('"ok":true')) return;
+      console.error('Brouillon Gmail : réponse inattendue, essai', essai);
+    } catch (e) { console.error('Brouillon Gmail', essai, e && e.message); return; } // délai dépassé : Google continue souvent le travail, on ne réessaie pas pour éviter un doublon
+  }
 }
 
 module.exports = async (req, res) => {
