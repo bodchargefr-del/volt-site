@@ -63,6 +63,7 @@
   .bod-pin { width: 58px; height: 74px; cursor: pointer; filter: drop-shadow(0 6px 10px rgba(27, 28, 28, .28)); }
   @media (max-width: 767px) {
     .map-wrap { border-radius: 1.75rem; height: 640px; }
+    @media (pointer: coarse) { .map-wrap { height: clamp(380px, 58vh, 520px); } } /* carte un peu moins haute : on peut encore faire défiler la page au-dessus et en dessous */
     .map-sheet { left: 12px; right: 12px; bottom: 12px; width: auto; border-radius: 24px; }
     .map-tools { right: 16px; bottom: 44px; gap: 12px; } .map-tools button { width: 54px; height: 54px; }
     .map-pill { font-size: .875rem; gap: 6px; }
@@ -333,7 +334,7 @@
     const map = new maplibregl.Map({
       container: 'bod-map', style: 'https://tiles.openfreemap.org/styles/positron',
       center: [2.6, 46.6], zoom: window.innerWidth < 700 ? 4.3 : 5.1, minZoom: 1.5, maxZoom: 16,
-      attributionControl: { compact: true }, cooperativeGestures: true, dragRotate: false, pitchWithRotate: false,
+      attributionControl: { compact: true }, cooperativeGestures: !matchMedia('(pointer: coarse)').matches, /* 15/10/2026 : sur téléphone, la carte se déplace avec un seul doigt ; sur ordinateur, Ctrl + molette pour zoomer comme avant */ dragRotate: false, pitchWithRotate: false,
       locale: { 'CooperativeGesturesHandler.WindowsHelpText': 'Maintenez Ctrl et tournez la molette pour zoomer', 'CooperativeGesturesHandler.MacHelpText': 'Maintenez ⌘ et faites défiler pour zoomer', 'CooperativeGesturesHandler.MobileHelpText': 'Utilisez deux doigts pour déplacer la carte' }
     });
     map.touchZoomRotate.disableRotation();
