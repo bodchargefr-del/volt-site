@@ -67,7 +67,7 @@ footer a[style*="font-weight:500"]:hover,footer a[style*="font-weight:500"]:focu
 #mobile-menu>div{padding:8px 24px 32px!important;display:flex;flex-direction:column;min-height:100%}
 #mobile-menu a{font-size:1.75rem!important;font-weight:800!important;letter-spacing:-.03em;color:#1b1c1c!important;padding:15px 0!important;margin:0!important;border-radius:0!important;border-bottom:1px solid rgba(27,28,28,.08)}
 #mobile-menu a[href="partenaire.html"]{margin-top:auto!important;border:0;border-radius:100px!important;padding:18px!important;font-size:1.0625rem!important;letter-spacing:0;background:#D0FF00!important}
-#mobile-menu a[href="a-propos.html"]{margin-bottom:28px!important}
+#mobile-menu a[href="contact.html"]{margin-bottom:28px!important}
 .menu-open,.menu-open body{overflow:hidden}
 }
 @media (prefers-reduced-motion:reduce){.bod-cta-bar{transition:none}}
