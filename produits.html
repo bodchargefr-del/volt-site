@@ -17,7 +17,7 @@
 <meta property="og:site_name" content="Bod"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="preload" href="fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin/>
-<link rel="stylesheet" href="styles.css?v=13"/>
+<link rel="stylesheet" href="styles.css?v=14"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
@@ -100,6 +100,11 @@
     .ba-wrap { aspect-ratio: 4 / 5 !important; border-radius: 1.5rem !important; }
   }
 </style>
+  <meta property="og:image" content="https://bodcharge.com/images/og-bod.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="fr_FR">
+  <script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebPage", "name": "Stations BOD — Basic, Medium et Maxi pour tous les établissements", "url": "https://bodcharge.com/produits", "inLanguage": "fr-FR", "description": "Trois stations de recharge portable adaptées à chaque établissement. Basic 6 slots, Medium 12 slots, Maxi 24 slots. Installation gratuite, maintenue par BOD.", "publisher": {"@type": "Organization", "name": "BOD", "url": "https://bodcharge.com/", "logo": "https://bodcharge.com/images/logo-bod.png"}}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://bodcharge.com/"}, {"@type": "ListItem", "position": 2, "name": "Produits", "item": "https://bodcharge.com/produits"}]}]</script>
 </head>
 <body class="bg-surface text-on-surface selection:bg-primary-container">
 
@@ -107,7 +112,7 @@
 <header class="fixed top-0 w-full z-50 glass-nav bg-[#fbf9f8]/85 border-b border-black/5">
   <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
     <a href="index.html" class="flex items-center">
-      <img src="images/logo-bod.png" alt="Bod" style="height:44px;width:auto;"/>
+      <img src="images/logo-bod.png" alt="Bod" style="height:44px;width:auto;" width="1778" height="678"/>
     </a>
     <nav class="hidden md:flex items-center gap-8 font-medium text-sm text-on-surface-variant">
       <a href="produits.html" class="text-primary border-b-2 border-primary-container pb-0.5" data-i18n="nav.products">Produits</a>
@@ -143,7 +148,7 @@
     <a href="blog.html" style="display:flex;align-items:center;padding:14px 12px;font-size:16px;font-weight:600;color:#3a3a3a;border-radius:12px;text-decoration:none;margin-bottom:2px;" data-i18n="nav.blog">Blog</a>
     <a href="a-propos.html" style="display:flex;align-items:center;padding:14px 12px;font-size:16px;font-weight:600;color:#3a3a3a;border-radius:12px;text-decoration:none;margin-bottom:2px;">À propos</a>
     <a href="contact.html" style="display:flex;align-items:center;padding:14px 12px;font-size:16px;font-weight:600;color:#3a3a3a;border-radius:12px;text-decoration:none;margin-bottom:12px;" data-i18n="nav.contact">Contact</a>
-    <a href="partenaire.html" style="display:flex;align-items:center;justify-content:center;padding:15px;background:#cef700;color:#1a2e00;border-radius:100px;font-size:15px;font-weight:700;text-decoration:none;" data-i18n="nav.cta">Devenir Partenaire</a>
+    <a href="partenaire.html" style="display:flex;align-items:center;justify-content:center;padding:15px;background:#cef700;color:#000;border-radius:100px;font-size:15px;font-weight:700;text-decoration:none;" data-i18n="nav.cta">Devenir Partenaire</a>
   </div>
 </div>
 
@@ -193,8 +198,8 @@
         <a href="partenaire.html" class="w-full inline-flex items-center justify-center bg-on-surface px-7 py-3.5 rounded-full font-black text-sm hover:scale-105 transition-transform active:scale-95" style="color:#e8e4df;" data-i18n="produits.cta">Demander cette station</a>
       </div>
       <div class="station-img-zone flex items-center justify-center p-6 gap-4" style="background-color:#e8e4df;">
-        <img src="images/basic-station.png" alt="Station BOD Basic — borne de location de batteries portables 6 slots pour bars et restaurants" style="object-fit:contain;max-height:440px;width:auto;">
-        <img src="images/batterie-externe-bod.png" alt="Batterie portable BOD disponible à la location" style="object-fit:contain;max-height:200px;width:auto;">
+        <img src="images/basic-station.png" alt="Station BOD Basic — borne de location de batteries portables 6 slots pour bars et restaurants" style="object-fit:contain;max-height:440px;width:auto;" width="1050" height="1400">
+        <img src="images/batterie-externe-bod.png" alt="Batterie portable BOD disponible à la location" style="object-fit:contain;max-height:200px;width:auto;" width="1000" height="1121">
       </div>
     </div>
 
@@ -202,7 +207,7 @@
     <div class="reveal reveal-delay-1 card-lift station-card bg-primary-container rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row">
       <div class="station-img-zone flex items-center justify-center p-6 gap-4" style="background-color:#b5de00;">
         <img src="images/medium-12-station-bod-detouree.webp" alt="Station BOD Medium — borne de comptoir 12 emplacements, écran BOD" width="1041" height="1600" style="object-fit:contain;max-height:400px;width:auto;filter:drop-shadow(0 24px 30px rgba(27,28,28,.22));">
-        <img src="images/batterie-externe-bod.png" alt="Batterie portable BOD disponible à la location" style="object-fit:contain;max-height:200px;width:auto;">
+        <img src="images/batterie-externe-bod.png" alt="Batterie portable BOD disponible à la location" style="object-fit:contain;max-height:200px;width:auto;" width="1000" height="1121">
       </div>
       <div class="station-text station-text-right flex flex-col justify-center p-10 md:p-14">
         <div class="slot-bubble flex items-center gap-3 mb-8">
@@ -268,7 +273,7 @@
       </div>
       <div class="station-img-zone flex items-center justify-center p-6 gap-4" style="background-color:#252525;">
         <img src="images/maxi-24-station-bod-detouree.webp?v=2" alt="Station BOD Maxi — borne sur pied 24 emplacements, écran BOD" width="511" height="1600" style="object-fit:contain;max-height:440px;width:auto;filter:drop-shadow(0 24px 30px rgba(0,0,0,.45));">
-        <img src="images/batterie-externe-bod.png" alt="Batterie portable BOD disponible à la location" style="object-fit:contain;max-height:200px;width:auto;">
+        <img src="images/batterie-externe-bod.png" alt="Batterie portable BOD disponible à la location" style="object-fit:contain;max-height:200px;width:auto;" width="1000" height="1121">
       </div>
     </div>
 
@@ -311,9 +316,9 @@
       <!-- Avant / Après slider -->
       <div class="reveal" style="margin-bottom:80px;">
         <div class="ba-wrap" style="position:relative;overflow:hidden;border-radius:2rem;width:100%;max-width:760px;aspect-ratio:4/3;background:#e0dbd5;cursor:ew-resize;user-select:none;touch-action:none;">
-          <img id="ba-img-apres" src="images/wrap-apres.webp?v=3" alt="Station BOD après personnalisation — habillage vinyle aux couleurs de l'établissement" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+          <img id="ba-img-apres" src="images/wrap-apres.webp?v=3" alt="Station BOD après personnalisation — habillage vinyle aux couleurs de l'établissement" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" width="2100" height="2800">
           <div class="ba-before" style="position:absolute;top:0;left:0;width:50%;height:100%;overflow:hidden;border-right:2px solid rgba(255,255,255,0.9);">
-            <img id="ba-img-avant" src="images/wrap-avant.webp?v=3" alt="Station BOD avant personnalisation — aspect standard" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+            <img id="ba-img-avant" src="images/wrap-avant.webp?v=3" alt="Station BOD avant personnalisation — aspect standard" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" width="2100" height="2800">
           </div>
           <div class="ba-handle" style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:44px;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;">
             <div style="width:44px;height:44px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 16px rgba(0,0,0,0.18);">
@@ -507,7 +512,7 @@
 
       <div>
         <a href="index.html" style="display:inline-block;margin-bottom:16px;">
-          <img src="images/logo-bod.png" alt="Bod" style="height:38px;width:auto;"/>
+          <img src="images/logo-bod.png" alt="Bod" style="height:38px;width:auto;" width="1778" height="678"/>
         </a>
         <p style="font-size:.875rem;color:rgba(27,28,28,0.45);max-width:220px;line-height:1.65;margin:0;" data-i18n="footer.tagline">La batterie de vos clients, c'est notre affaire.</p>
         <div style="display:flex;gap:12px;margin-top:16px;">

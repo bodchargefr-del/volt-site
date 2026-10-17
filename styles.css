@@ -72,3 +72,6 @@ footer a[style*="font-weight:500"]:hover,footer a[style*="font-weight:500"]:focu
 }
 @media (prefers-reduced-motion:reduce){.bod-cta-bar{transition:none}}
 @media print{.bod-cta-bar{display:none!important}}
+
+/* 16/10/2026 (Jules) : texte des boutons jaunes en noir (Installer une station, Devenir Partenaire…) */
+.bg-primary-container.text-on-primary-container{color:#000}
