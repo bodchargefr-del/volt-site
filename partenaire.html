@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
-<script src="lang.js?v=3" defer></script>
+<script src="lang.js?v=4" defer></script>
 <script src="anim.js?v=5" defer></script>
 <script type="application/ld+json">
 {
@@ -79,6 +79,40 @@
   <!-- Statistiques de visite Vercel (18/10/2026) : sans cookies -->
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
+<style>
+  /* 22/10/2026 (Jules : « que tout tienne sur une page sans que l'on ait besoin de défiler ») */
+  .part-fit{padding-bottom:24px!important;min-height:100vh;min-height:100svh;box-sizing:border-box}
+  .part-fit>div{padding-top:28px!important;align-items:center!important}
+  .part-fit section>div:first-child{margin-bottom:10px!important}
+  .part-fit .bod-title{font-size:clamp(2.25rem,3.6vw,3.25rem);margin-bottom:12px!important}
+  .part-fit section>p{margin-bottom:22px!important;font-size:1.0625rem!important}
+  #partenaire-form{display:grid;gap:14px}
+  #partenaire-form>*{margin-top:0!important}
+  #partenaire-form .grid{gap:14px}
+  #partenaire-form label{margin-bottom:6px!important}
+  #partenaire-form input,#partenaire-form select,#partenaire-form textarea{padding-top:11px!important;padding-bottom:11px!important}
+  #partenaire-btn{padding:14px 32px!important;font-size:1rem!important;justify-self:start}
+  .part-direct{display:none!important}
+  .part-fit aside{top:96px!important}
+  .part-fit aside img{height:clamp(220px,calc(100vh - 430px),520px)!important}
+  .part-fit aside .absolute.bottom-8{bottom:16px!important;left:16px!important;right:16px!important;padding:16px 18px!important}
+  .part-fit aside .mt-6{margin-top:16px!important;padding:20px 24px!important}
+  .part-fit aside .mt-6 h3{margin-bottom:10px!important;font-size:1.125rem!important}
+  .part-fit aside .mt-6 .space-y-3>*+*{margin-top:6px!important}
+  @media (max-width:767px){
+    .part-fit{padding-top:72px!important}
+    .part-fit>div{padding-top:16px!important}
+    .part-fit section>div:first-child{display:none}
+    .part-fit .bod-title{font-size:2rem;margin-bottom:8px!important}
+    .part-fit section>p{margin-bottom:14px!important;font-size:.9375rem!important}
+    #partenaire-form{gap:10px}
+    #partenaire-form .grid{grid-template-columns:1fr 1fr;gap:10px}
+    #partenaire-form label{font-size:10px!important;margin-bottom:4px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #partenaire-form input,#partenaire-form select,#partenaire-form textarea{padding:9px 12px!important;font-size:16px}
+    #partenaire-btn{justify-self:stretch;justify-content:center;padding:13px!important}
+    #partenaire-form select{white-space:nowrap;text-overflow:ellipsis;padding-right:30px!important;font-size:15px}
+  }
+</style>
 </head>
 <body class="bg-surface text-on-surface selection:bg-primary-container">
 
@@ -129,7 +163,7 @@
   </div>
 </div>
 
-<main class="pt-20 pb-20">
+<main class="pt-20 pb-20 part-fit">
   <div class="max-w-7xl mx-auto px-6 pt-16 md:pt-24 grid lg:grid-cols-2 gap-10 lg:gap-20 items-start">
 
     <!-- FORM -->
@@ -181,7 +215,7 @@
         </div>
         <div>
           <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Message (optionnel)</label>
-          <textarea name="message" rows="4" placeholder="Questions, précisions, contexte..." class="w-full bg-surface-container-low rounded-xl px-4 py-3.5 text-on-surface border-none transition-colors resize-none"></textarea>
+          <textarea name="message" rows="2" placeholder="Questions, précisions, contexte..." class="w-full bg-surface-container-low rounded-xl px-4 py-3.5 text-on-surface border-none transition-colors resize-none"></textarea>
         </div>
         <button type="submit" id="partenaire-btn" class="group flex items-center gap-3 bg-primary-container text-on-primary-container px-10 py-5 rounded-full font-black text-lg hover:shadow-lg hover:shadow-primary-container/30 active:scale-95 transition-all">
           Envoyer la demande
@@ -219,7 +253,7 @@
       </script>
 
       <!-- CONTACT DIRECT -->
-      <div class="mt-12 flex flex-wrap gap-4">
+      <div class="mt-12 flex flex-wrap gap-4 part-direct">
         <div class="flex items-center gap-3 bg-surface-container-lowest rounded-2xl px-5 py-4 shadow-sm">
           <span class="material-symbols-outlined text-primary">alternate_email</span>
           <div>

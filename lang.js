@@ -1064,66 +1064,62 @@ function applyLang(lang) {
   const labelEl = document.getElementById('lang-label');
   if (flagEl) flagEl.textContent = lang === 'fr' ? '🇫🇷' : '🇬🇧';
   if (labelEl) labelEl.textContent = lang === 'fr' ? 'FR' : 'EN';
-  // Update modal active state
+  // Menu des langues : langue choisie en couleur et en gras (22/10/2026, comme le site Vizion)
   document.querySelectorAll('.bod-lang-opt').forEach(btn => {
     const active = btn.getAttribute('data-lang') === lang;
-    btn.style.background = active ? '#e6f5c9' : '#f0ede9';
-    btn.style.fontWeight = active ? '700' : '500';
-    const check = btn.querySelector('.bod-check');
-    if (check) check.style.display = active ? 'block' : 'none';
+    btn.classList.toggle('is-on', active);
+    if (active) btn.setAttribute('aria-current', 'true'); else btn.removeAttribute('aria-current');
   });
   closeModal();
 }
 
+/* 22/10/2026 (Jules : « inspire-toi de Vizion pour l'affichage des langues ») :
+   petit menu qui s'ouvre sous le bouton (au lieu du grand panneau en bas de l'écran). */
 function closeModal() {
-  const overlay = document.getElementById('bod-lang-overlay');
-  const sheet = document.getElementById('bod-lang-sheet');
-  if (!overlay || overlay.style.display === 'none') return;
-  sheet.style.transform = 'translateY(100%)';
-  sheet.style.opacity = '0';
-  setTimeout(() => { overlay.style.display = 'none'; }, 280);
+  const pop = document.getElementById('bod-lang-pop');
+  const btn = document.getElementById('lang-btn');
+  if (!pop || pop.hidden) return;
+  pop.hidden = true;
+  if (btn) btn.setAttribute('aria-expanded', 'false');
 }
 
 function openModal() {
-  const overlay = document.getElementById('bod-lang-overlay');
-  const sheet = document.getElementById('bod-lang-sheet');
-  if (!overlay) return;
-  overlay.style.display = 'flex';
-  requestAnimationFrame(() => {
-    sheet.style.transform = 'translateY(0)';
-    sheet.style.opacity = '1';
-  });
+  const pop = document.getElementById('bod-lang-pop');
+  const btn = document.getElementById('lang-btn');
+  if (!pop) return;
+  pop.hidden = false;
+  if (btn) btn.setAttribute('aria-expanded', 'true');
 }
 
 function injectModal() {
-  const overlay = document.createElement('div');
-  overlay.id = 'bod-lang-overlay';
-  overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.4);align-items:flex-end;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0);';
-  overlay.innerHTML = `
-    <div id="bod-lang-sheet" style="background:#fbf9f8;border-radius:24px 24px 0 0;padding:0 24px 40px;width:100%;max-width:480px;transform:translateY(100%);opacity:0;transition:transform 0.28s cubic-bezier(0.32,0.72,0,1),opacity 0.28s ease;">
-      <div style="padding:14px 0 8px;text-align:center;">
-        <div style="width:36px;height:4px;border-radius:4px;background:#d4d0cc;margin:0 auto;"></div>
-      </div>
-      <p style="font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#9a9690;margin:16px 0 12px;font-family:Inter,sans-serif;">Langue · Language</p>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button class="bod-lang-opt" data-lang="fr" style="display:flex;align-items:center;gap:14px;padding:15px 18px;border-radius:16px;border:none;cursor:pointer;font-size:15px;font-family:Inter,sans-serif;width:100%;text-align:left;transition:background 0.15s;background:#f0ede9;font-weight:500;">
-          <span style="font-size:22px;flex-shrink:0;">🇫🇷</span>
-          <span style="color:#1a1a1a;">Français</span>
-          <span class="bod-check" style="display:none;margin-left:auto;color:#5a7a00;font-size:18px;font-weight:900;">✓</span>
-        </button>
-        <button class="bod-lang-opt" data-lang="en" style="display:flex;align-items:center;gap:14px;padding:15px 18px;border-radius:16px;border:none;cursor:pointer;font-size:15px;font-family:Inter,sans-serif;width:100%;text-align:left;transition:background 0.15s;background:#f0ede9;font-weight:500;">
-          <span style="font-size:22px;flex-shrink:0;">🇬🇧</span>
-          <span style="color:#1a1a1a;">English</span>
-          <span class="bod-check" style="display:none;margin-left:auto;color:#5a7a00;font-size:18px;font-weight:900;">✓</span>
-        </button>
-      </div>
-    </div>
+  const btn = document.getElementById('lang-btn');
+  if (!btn) return;
+  const css = document.createElement('style');
+  css.textContent = `
+    .bod-lang-wrap{position:relative;display:inline-flex}
+    #bod-lang-pop{position:absolute;top:calc(100% + 14px);right:0;z-index:300;width:200px;padding:10px 20px;border-radius:18px;background:#f5f3f1;box-shadow:0 22px 50px -18px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.04);font-family:inherit}
+    #bod-lang-pop[hidden]{display:none}
+    .bod-lang-opt{display:block;width:100%;padding:8px 0;border:0;background:none;text-align:left;font-size:15px;font-weight:500;color:#1a1a1a;cursor:pointer;transition:color .15s}
+    .bod-lang-opt:hover,.bod-lang-opt.is-on{color:#5a7a00}
+    .bod-lang-opt.is-on{font-weight:700}
+    #lang-btn[aria-expanded="true"]{background:#e9e6e2}
+    @media (max-width:767px){#bod-lang-pop{position:fixed;top:72px;left:12px;right:12px;width:auto}}
   `;
-  document.body.appendChild(overlay);
-  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-  overlay.querySelectorAll('.bod-lang-opt').forEach(btn => {
-    btn.addEventListener('click', () => applyLang(btn.getAttribute('data-lang')));
-  });
+  document.head.appendChild(css);
+  const wrap = document.createElement('span');
+  wrap.className = 'bod-lang-wrap';
+  btn.parentNode.insertBefore(wrap, btn);
+  wrap.appendChild(btn);
+  btn.setAttribute('aria-haspopup', 'true');
+  btn.setAttribute('aria-expanded', 'false');
+  const pop = document.createElement('div');
+  pop.id = 'bod-lang-pop';
+  pop.hidden = true;
+  pop.innerHTML = '<button type="button" class="bod-lang-opt" data-lang="fr">Français</button><button type="button" class="bod-lang-opt" data-lang="en">English</button>';
+  wrap.appendChild(pop);
+  pop.querySelectorAll('.bod-lang-opt').forEach(b => b.addEventListener('click', () => applyLang(b.getAttribute('data-lang'))));
+  document.addEventListener('click', e => { if (!wrap.contains(e.target)) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); btn.focus(); } });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1131,5 +1127,5 @@ document.addEventListener('DOMContentLoaded', () => {
   applyLang(getLang());
   _bodObs.observe(document.body, { childList: true, subtree: true, characterData: true });
   const langBtn = document.getElementById('lang-btn');
-  if (langBtn) langBtn.addEventListener('click', openModal);
+  if (langBtn) langBtn.addEventListener('click', e => { e.stopPropagation(); const pop = document.getElementById('bod-lang-pop'); if (pop && !pop.hidden) closeModal(); else openModal(); });
 });
