@@ -53,6 +53,45 @@
   <!-- Statistiques de visite Vercel (18/10/2026) : sans cookies -->
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
+<style>
+  /* 23/10/2026 (Jules : « que tout tienne sur la page contact sans défiler ») */
+  .contact-fit{padding-bottom:24px!important;min-height:100vh;min-height:100svh;box-sizing:border-box}
+  .contact-fit>div{padding-top:28px!important;align-items:center!important}
+  .contact-fit section>div:first-child{margin-bottom:10px!important}
+  .contact-fit .bod-title{font-size:clamp(2.25rem,3.6vw,3.25rem);margin-bottom:12px!important}
+  .contact-fit section>p{margin-bottom:22px!important;font-size:1.0625rem!important}
+  #contact-form{display:grid;gap:14px}
+  #contact-form>*{margin-top:0!important}
+  #contact-form .grid{gap:14px}
+  #contact-form label{margin-bottom:6px!important}
+  #contact-form input,#contact-form select,#contact-form textarea{padding-top:11px!important;padding-bottom:11px!important}
+  #contact-btn{padding:14px 32px!important;font-size:1rem!important;justify-self:start}
+  .contact-fit aside{display:grid;gap:14px}
+  .contact-fit aside>*{margin-top:0!important}
+  .contact-fit aside>div{padding:22px 26px!important}
+  .contact-fit aside h2{margin-bottom:14px!important}
+  .contact-fit aside .space-y-5>*+*,.contact-fit aside .space-y-6>*+*,.contact-fit aside .space-y-4>*+*{margin-top:12px!important}
+  @media (min-width:768px){.contact-fit{display:flex;flex-direction:column;justify-content:center;padding-top:80px!important}.contact-fit>div{width:100%;padding-top:16px!important}}
+  .contact-fit aside a.rounded-full,.contact-fit aside button.rounded-full{padding:14px 30px!important;font-size:1rem!important}
+  @media (min-width:768px) and (max-height:800px){
+    .contact-fit aside>div{padding:16px 22px!important}
+    .contact-fit aside h2{margin-bottom:10px!important;font-size:1.125rem!important}
+    .contact-fit aside p{font-size:.875rem!important}
+    .contact-fit aside .w-12,.contact-fit aside .w-11,.contact-fit aside .w-10{width:38px!important;height:38px!important}
+  }
+  @media (max-width:767px){
+    .contact-fit{padding-top:72px!important;min-height:0}
+    .contact-fit>div{padding-top:16px!important}
+    .contact-fit section>div:first-child{display:none}
+    .contact-fit .bod-title{font-size:2rem;margin-bottom:8px!important}
+    .contact-fit section>p{margin-bottom:14px!important;font-size:.9375rem!important}
+    #contact-form{gap:10px}
+    #contact-form .grid{grid-template-columns:1fr 1fr;gap:10px}
+    #contact-form label{font-size:10px!important;margin-bottom:4px!important}
+    #contact-form input,#contact-form select,#contact-form textarea{padding:9px 12px!important;font-size:16px}
+    #contact-btn{justify-self:stretch;justify-content:center;padding:13px!important}
+  }
+</style>
 </head>
 <body class="bg-surface text-on-surface selection:bg-primary-container">
 
@@ -100,7 +139,7 @@
   </div>
 </div>
 
-<main class="pt-20 pb-20">
+<main class="pt-20 pb-20 contact-fit">
   <div class="max-w-7xl mx-auto px-6 pt-16 md:pt-24 grid lg:grid-cols-2 gap-10 lg:gap-20 items-start">
 
     <!-- FORM -->
@@ -141,7 +180,7 @@
         </div>
         <div>
           <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2" data-i18n="contact.form.message">Message</label>
-          <textarea name="message" rows="5" placeholder="Votre message..." required class="w-full bg-surface-container-low rounded-xl px-4 py-3.5 text-on-surface border-none transition-colors resize-none"></textarea>
+          <textarea name="message" rows="3" placeholder="Votre message..." required class="w-full bg-surface-container-low rounded-xl px-4 py-3.5 text-on-surface border-none transition-colors resize-none"></textarea>
         </div>
         <button type="submit" id="contact-btn" class="group flex items-center gap-3 bg-primary-container text-on-primary-container px-10 py-5 rounded-full font-black text-lg hover:shadow-lg hover:shadow-primary-container/30 active:scale-95 transition-all" data-i18n="contact.form.send">
           Envoyer
