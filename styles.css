@@ -104,6 +104,7 @@ main aside .rounded-3xl .rounded-3xl:hover,main aside>div .rounded-3xl:hover{tra
 @media (prefers-reduced-motion:reduce){:is(a,button).rounded-full::after,.sect-btn::after,.bod-cta-bar a::after{display:none}main aside>div:hover,footer a:hover{transform:none}}
 /* 23/10/2026 (Jules) : liens du menu du haut = même animation que le pied de page, trait du vrai jaune Bod (#D0FF00) */
 header nav a{position:relative;background-image:none!important}
-header nav a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:2px;border-radius:2px;background:#D0FF00;transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+header nav a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:2px;border-radius:2px;background:#526600;transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.2,.7,.2,1)}
 header nav a:hover::after,header nav a:focus-visible::after{transform:scaleX(1)}
 header nav a.border-primary-container::after{display:none}
+header nav a:hover{color:#526600}
