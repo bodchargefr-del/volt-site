@@ -158,8 +158,8 @@
     .m-phones { zoom: .66; }
     .m-stack { grid-template-columns: 1fr !important; }
   }
-  /* 30/10/2026 (Jules) : ordinateur — image un peu moins haute pour voir les chiffres en bas de la première page */
-  @media (min-width: 1024px) { .hero-img-wrap { width: min(100%, 440px, calc((100vh - 400px) * .8)) !important; } .hero { padding-bottom: 40px !important; } }
+  /* 30/10/2026 (Jules) : ordinateur — la première page remplit tout l'écran (texte à gauche, photo à droite, en grand), les chiffres viennent en faisant défiler */
+  @media (min-width: 1024px) { .hero { min-height: 100vh; min-height: 100svh; align-content: center; padding-bottom: 48px !important; } .hero-img-wrap { width: min(100%, 520px, calc((100vh - 190px) * .8)) !important; max-width: none !important; } }
   /* Téléphone : la photo du haut de page prend tout l'écran, le titre, le texte et les boutons sont posés dessus */
   @media (max-width: 767px) {
     .hero { display: flex !important; flex-direction: column; justify-content: flex-end; min-height: 100vh; min-height: 100svh; max-width: none; padding: 96px 24px 32px !important; isolation: isolate; }
