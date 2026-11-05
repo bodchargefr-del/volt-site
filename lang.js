@@ -851,6 +851,7 @@ const TEXTES_EN = {
  "Réputation": "Reputation",
  "Résultat : durée de présence raccourcie, consommation supplémentaire évitée, expérience globale jugée moins positive.": "The result: a shorter visit, an extra order that never happens, and an overall experience rated less positively.",
  "SIRET :": "SIRET:",
+ "SIREN :": "SIREN (company no.):",
  "Salle de sport": "Gym",
  "Salles de sport": "Gyms",
  "Scan du QR code": "Scan the QR code",
